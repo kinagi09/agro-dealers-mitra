@@ -120,8 +120,29 @@ class _UpdatePesticideLicenceScreenState extends State<UpdatePesticideLicenceScr
     setState(() => _entries.add(PesticideEntryDraft()));
   }
 
-  void _removeRow(int index) {
+  Future<void> _removeRow(int index) async {
     if (_entries.length == 1) return;
+    final entry = _entries[index];
+    if (entry.existingId != null) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Remove Entry'),
+          content: const Text('This will permanently delete this company entry. Continue?'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+            TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Remove')),
+          ],
+        ),
+      );
+      if (confirmed != true) return;
+      try {
+        await _apiService.deleteLicenceEntry(entry.existingId!);
+      } catch (e) {
+        setState(() => _errorMessage = 'Could not remove this entry. Please try again.');
+        return;
+      }
+    }
     setState(() => _entries.removeAt(index));
   }
 

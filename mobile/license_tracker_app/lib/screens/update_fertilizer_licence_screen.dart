@@ -179,8 +179,29 @@ class _UpdateFertilizerLicenceScreenState extends State<UpdateFertilizerLicenceS
     setState(() => _sourceEntries.add(SourceEntryDraft()));
   }
 
-  void _removeSourceRow(int index) {
+  Future<void> _removeSourceRow(int index) async {
     if (_sourceEntries.length == 1) return;
+    final entry = _sourceEntries[index];
+    if (entry.existingId != null) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Remove Entry'),
+          content: const Text('This will permanently delete this source entry. Continue?'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+            TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Remove')),
+          ],
+        ),
+      );
+      if (confirmed != true) return;
+      try {
+        await _apiService.deleteLicenceEntry(entry.existingId!);
+      } catch (e) {
+        setState(() => _errorMessage = 'Could not remove this entry. Please try again.');
+        return;
+      }
+    }
     setState(() => _sourceEntries.removeAt(index));
   }
 

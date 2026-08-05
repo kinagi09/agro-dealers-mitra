@@ -312,11 +312,18 @@ class ApiService {
     );
   }
 
+  Future<void> deleteLicenceEntry(int entryId) async {
+    await _authorizedRequest(
+      (headers) => http.delete(Uri.parse('$baseUrl/licence-entries/$entryId/'), headers: headers),
+    );
+  }
+
   // ---------- SHARED RESPONSE HANDLER ----------
 
   dynamic _handleResponse(http.Response response) {
-    final decoded = jsonDecode(response.body);
-    if (response.statusCode >= 200 && response.statusCode < 300) {
+    final isSuccess = response.statusCode >= 200 && response.statusCode < 300;
+    final decoded = response.body.isEmpty ? null : jsonDecode(response.body);
+    if (isSuccess) {
       return decoded;
     } else {
       throw ApiException(decoded);
