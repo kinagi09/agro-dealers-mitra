@@ -8,7 +8,16 @@ class PesticideEntryDraft {
 }
 
 class UpdatePesticideLicenceScreen extends StatefulWidget {
-  const UpdatePesticideLicenceScreen({super.key});
+  final int licenceTypeId;
+  final String licenceTypeName;
+  final Map<String, dynamic>? existingLicence;
+
+  const UpdatePesticideLicenceScreen({
+    super.key,
+    required this.licenceTypeId,
+    required this.licenceTypeName,
+    this.existingLicence,
+  });
 
   @override
   State<UpdatePesticideLicenceScreen> createState() => _UpdatePesticideLicenceScreenState();
@@ -18,8 +27,6 @@ class _UpdatePesticideLicenceScreenState extends State<UpdatePesticideLicenceScr
   final ApiService _apiService = ApiService();
   final TextEditingController _licenceNumberController = TextEditingController();
 
-  List<dynamic> _pesticideLicenceTypes = [];
-  int? _selectedTypeId;
   DateTime? _issueDate;
   DateTime? _expiryDate;
   int? _existingLicenceId;
@@ -32,38 +39,17 @@ class _UpdatePesticideLicenceScreenState extends State<UpdatePesticideLicenceScr
   int? _errorRowIndex;
   String? _errorFieldName;
 
-  static const String pesticideCategoryName = 'Pesticide';
-  int? _pesticideCategoryId;
-
   @override
   void initState() {
     super.initState();
-    _loadDropdownData();
+    _loadExisting();
   }
 
-  Future<void> _loadDropdownData() async {
+  Future<void> _loadExisting() async {
     try {
-      final categories = await _apiService.getLicenceCategories();
-      final pesticideCategory = categories.firstWhere(
-        (c) => c['name'] == pesticideCategoryName,
-        orElse: () => null,
-      );
-      if (pesticideCategory == null) {
-        setState(() {
-          _errorMessage = 'Pesticide category not found. Please contact support.';
-          _isLoadingDropdowns = false;
-        });
-        return;
-      }
-      _pesticideCategoryId = pesticideCategory['id'];
-
-      final types = await _apiService.getLicenceTypes(_pesticideCategoryId!);
-      final existingLicences = await _apiService.getMyLicencesByCategory(_pesticideCategoryId!);
-
-      if (existingLicences.isNotEmpty) {
-        final existing = existingLicences.first as Map<String, dynamic>;
+      final existing = widget.existingLicence;
+      if (existing != null) {
         _existingLicenceId = existing['id'];
-        _selectedTypeId = existing['licence_type'];
         _licenceNumberController.text = existing['licence_number'];
         _issueDate = DateTime.parse(existing['issue_date']);
         _expiryDate = DateTime.parse(existing['expiry_date']);
@@ -81,10 +67,7 @@ class _UpdatePesticideLicenceScreenState extends State<UpdatePesticideLicenceScr
         }
       }
 
-      setState(() {
-        _pesticideLicenceTypes = types;
-        _isLoadingDropdowns = false;
-      });
+      setState(() => _isLoadingDropdowns = false);
     } catch (e) {
       setState(() {
         _errorMessage = 'Could not load licence options. Check your connection.';
@@ -155,10 +138,6 @@ class _UpdatePesticideLicenceScreenState extends State<UpdatePesticideLicenceScr
       _errorFieldName = null;
     });
 
-    if (_selectedTypeId == null) {
-      setState(() => _errorMessage = 'The Licence Type field is not filled, please do fill it.');
-      return;
-    }
     if (_licenceNumberController.text.trim().isEmpty) {
       setState(() => _errorMessage = 'The Licence Number field is not filled, please do fill it.');
       return;
@@ -201,7 +180,7 @@ class _UpdatePesticideLicenceScreenState extends State<UpdatePesticideLicenceScr
       if (_existingLicenceId != null) {
         await _apiService.updateLicence(
           licenceId: _existingLicenceId!,
-          licenceType: _selectedTypeId!,
+          licenceType: widget.licenceTypeId,
           licenceNumber: _licenceNumberController.text.trim(),
           issueDate: _formatDate(_issueDate!),
           expiryDate: _formatDate(_expiryDate!),
@@ -215,7 +194,7 @@ class _UpdatePesticideLicenceScreenState extends State<UpdatePesticideLicenceScr
         }
         final licenceResponse = await _apiService.createLicence(
           dealer: dealerId,
-          licenceType: _selectedTypeId!,
+          licenceType: widget.licenceTypeId,
           licenceNumber: _licenceNumberController.text.trim(),
           issueDate: _formatDate(_issueDate!),
           expiryDate: _formatDate(_expiryDate!),
@@ -268,27 +247,20 @@ class _UpdatePesticideLicenceScreenState extends State<UpdatePesticideLicenceScr
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: Colors.deepOrange),
                     ),
-                    child: const Row(
+                    child: Row(
                       children: [
-                        Icon(Icons.bug_report, color: Colors.deepOrange),
-                        SizedBox(width: 8),
-                        Text('Licence Category: Pesticide', style: TextStyle(fontWeight: FontWeight.bold)),
+                        const Icon(Icons.bug_report, color: Colors.deepOrange),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Licence Type: ${widget.licenceTypeName}',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Material(
-                    color: Colors.transparent,
-                    child: DropdownButtonFormField<int>(
-                      initialValue: _selectedTypeId,
-                      decoration: const InputDecoration(labelText: 'Licence Type', border: OutlineInputBorder()),
-                      items: _pesticideLicenceTypes
-                          .map<DropdownMenuItem<int>>((t) => DropdownMenuItem(value: t['id'], child: Text(t['name'])))
-                          .toList(),
-                      onChanged: (value) => setState(() => _selectedTypeId = value),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
                   TextField(
                     controller: _licenceNumberController,
                     decoration: const InputDecoration(labelText: 'Licence Number', border: OutlineInputBorder()),

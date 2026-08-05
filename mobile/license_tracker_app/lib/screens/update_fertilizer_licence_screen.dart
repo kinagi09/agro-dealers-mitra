@@ -10,7 +10,16 @@ class SourceEntryDraft {
 }
 
 class UpdateFertilizerLicenceScreen extends StatefulWidget {
-  const UpdateFertilizerLicenceScreen({super.key});
+  final int licenceTypeId;
+  final String licenceTypeName;
+  final Map<String, dynamic>? existingLicence;
+
+  const UpdateFertilizerLicenceScreen({
+    super.key,
+    required this.licenceTypeId,
+    required this.licenceTypeName,
+    this.existingLicence,
+  });
 
   @override
   State<UpdateFertilizerLicenceScreen> createState() => _UpdateFertilizerLicenceScreenState();
@@ -20,10 +29,8 @@ class _UpdateFertilizerLicenceScreenState extends State<UpdateFertilizerLicenceS
   final ApiService _apiService = ApiService();
   final TextEditingController _licenceNumberController = TextEditingController();
 
-  List<dynamic> _fertilizerLicenceTypes = [];
   List<dynamic> _fertilizerTypeOptions = [];
 
-  int? _selectedTypeId;
   DateTime? _issueDate;
   DateTime? _expiryDate;
   int? _existingLicenceId;
@@ -36,9 +43,6 @@ class _UpdateFertilizerLicenceScreenState extends State<UpdateFertilizerLicenceS
   int? _errorRowIndex;
   String? _errorFieldName;
 
-  static const String fertilizerCategoryName = 'Fertilizer';
-  int? _fertilizerCategoryId;
-
   @override
   void initState() {
     super.initState();
@@ -47,28 +51,11 @@ class _UpdateFertilizerLicenceScreenState extends State<UpdateFertilizerLicenceS
 
   Future<void> _loadDropdownData() async {
     try {
-      final categories = await _apiService.getLicenceCategories();
-      final fertilizerCategory = categories.firstWhere(
-        (c) => c['name'] == fertilizerCategoryName,
-        orElse: () => null,
-      );
-      if (fertilizerCategory == null) {
-        setState(() {
-          _errorMessage = 'Fertilizer category not found. Please contact support.';
-          _isLoadingDropdowns = false;
-        });
-        return;
-      }
-      _fertilizerCategoryId = fertilizerCategory['id'];
-
-      final types = await _apiService.getLicenceTypes(_fertilizerCategoryId!);
       final fertilizerTypeOptions = await _apiService.getFertilizerTypes();
-      final existingLicences = await _apiService.getMyLicencesByCategory(_fertilizerCategoryId!);
 
-      if (existingLicences.isNotEmpty) {
-        final existing = existingLicences.first as Map<String, dynamic>;
+      final existing = widget.existingLicence;
+      if (existing != null) {
         _existingLicenceId = existing['id'];
-        _selectedTypeId = existing['licence_type'];
         _licenceNumberController.text = existing['licence_number'];
         _issueDate = DateTime.parse(existing['issue_date']);
         _expiryDate = DateTime.parse(existing['expiry_date']);
@@ -89,7 +76,6 @@ class _UpdateFertilizerLicenceScreenState extends State<UpdateFertilizerLicenceS
       }
 
       setState(() {
-        _fertilizerLicenceTypes = types;
         _fertilizerTypeOptions = fertilizerTypeOptions;
         _isLoadingDropdowns = false;
       });
@@ -211,10 +197,6 @@ class _UpdateFertilizerLicenceScreenState extends State<UpdateFertilizerLicenceS
       _errorFieldName = null;
     });
 
-    if (_selectedTypeId == null) {
-      setState(() => _errorMessage = 'The Licence Type field is not filled, please do fill it.');
-      return;
-    }
     if (_licenceNumberController.text.trim().isEmpty) {
       setState(() => _errorMessage = 'The Licence Number field is not filled, please do fill it.');
       return;
@@ -265,7 +247,7 @@ class _UpdateFertilizerLicenceScreenState extends State<UpdateFertilizerLicenceS
       if (_existingLicenceId != null) {
         await _apiService.updateLicence(
           licenceId: _existingLicenceId!,
-          licenceType: _selectedTypeId!,
+          licenceType: widget.licenceTypeId,
           licenceNumber: _licenceNumberController.text.trim(),
           issueDate: _formatDate(_issueDate!),
           expiryDate: _formatDate(_expiryDate!),
@@ -279,7 +261,7 @@ class _UpdateFertilizerLicenceScreenState extends State<UpdateFertilizerLicenceS
         }
         final licenceResponse = await _apiService.createLicence(
           dealer: dealerId,
-          licenceType: _selectedTypeId!,
+          licenceType: widget.licenceTypeId,
           licenceNumber: _licenceNumberController.text.trim(),
           issueDate: _formatDate(_issueDate!),
           expiryDate: _formatDate(_expiryDate!),
@@ -336,27 +318,20 @@ class _UpdateFertilizerLicenceScreenState extends State<UpdateFertilizerLicenceS
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: Colors.green),
                     ),
-                    child: const Row(
+                    child: Row(
                       children: [
-                        Icon(Icons.eco, color: Colors.green),
-                        SizedBox(width: 8),
-                        Text('Licence Category: Fertilizer', style: TextStyle(fontWeight: FontWeight.bold)),
+                        const Icon(Icons.eco, color: Colors.green),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Licence Type: ${widget.licenceTypeName}',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Material(
-                    color: Colors.transparent,
-                    child: DropdownButtonFormField<int>(
-                      initialValue: _selectedTypeId,
-                      decoration: const InputDecoration(labelText: 'Licence Type', border: OutlineInputBorder()),
-                      items: _fertilizerLicenceTypes
-                          .map<DropdownMenuItem<int>>((t) => DropdownMenuItem(value: t['id'], child: Text(t['name'])))
-                          .toList(),
-                      onChanged: (value) => setState(() => _selectedTypeId = value),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
                   TextField(
                     controller: _licenceNumberController,
                     decoration: const InputDecoration(labelText: 'Licence Number', border: OutlineInputBorder()),

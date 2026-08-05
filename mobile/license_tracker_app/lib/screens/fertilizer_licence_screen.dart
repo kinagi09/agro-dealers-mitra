@@ -11,8 +11,9 @@ class FertilizerLicenceScreen extends StatefulWidget {
 
 class _FertilizerLicenceScreenState extends State<FertilizerLicenceScreen> {
   final ApiService _apiService = ApiService();
-  Map<String, dynamic>? _licence;
-  List<dynamic> _entries = [];
+  List<dynamic> _licenceTypes = [];
+  Map<int, Map<String, dynamic>> _licencesByType = {};
+  Map<int, List<dynamic>> _entriesByType = {};
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -21,10 +22,10 @@ class _FertilizerLicenceScreenState extends State<FertilizerLicenceScreen> {
   @override
   void initState() {
     super.initState();
-    _loadLicence();
+    _loadLicences();
   }
 
-  Future<void> _loadLicence() async {
+  Future<void> _loadLicences() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -42,24 +43,26 @@ class _FertilizerLicenceScreenState extends State<FertilizerLicenceScreen> {
         });
         return;
       }
+      final types = await _apiService.getLicenceTypes(category['id']);
       final licences = await _apiService.getMyLicencesByCategory(category['id']);
-      if (licences.isEmpty) {
-        setState(() {
-          _licence = null;
-          _isLoading = false;
-        });
-        return;
+
+      final licencesByType = <int, Map<String, dynamic>>{};
+      final entriesByType = <int, List<dynamic>>{};
+      for (final l in licences) {
+        final licence = l as Map<String, dynamic>;
+        licencesByType[licence['licence_type']] = licence;
+        entriesByType[licence['licence_type']] = await _apiService.getLicenceEntries(licence['id']);
       }
-      final licence = licences.first as Map<String, dynamic>;
-      final entries = await _apiService.getLicenceEntries(licence['id']);
+
       setState(() {
-        _licence = licence;
-        _entries = entries;
+        _licenceTypes = types;
+        _licencesByType = licencesByType;
+        _entriesByType = entriesByType;
         _isLoading = false;
       });
     } catch (e) {
       setState(() {
-        _errorMessage = 'Could not load licence. Check your connection.';
+        _errorMessage = 'Could not load licences. Check your connection.';
         _isLoading = false;
       });
     }
@@ -75,64 +78,81 @@ class _FertilizerLicenceScreenState extends State<FertilizerLicenceScreen> {
     );
   }
 
+  Future<void> _openUpdateScreen(Map<String, dynamic> type) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => UpdateFertilizerLicenceScreen(
+          licenceTypeId: type['id'],
+          licenceTypeName: type['name'],
+          existingLicence: _licencesByType[type['id']],
+        ),
+      ),
+    );
+    if (result == true) {
+      _loadLicences();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Fertilizer Licence')),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (_errorMessage != null)
-                    Text(_errorMessage!, style: const TextStyle(color: Colors.red))
-                  else if (_licence == null)
-                    const Text('No Fertilizer Licence added yet.', style: TextStyle(fontSize: 16))
-                  else ...[
-                    _infoField('Licence No', _licence!['licence_number']),
-                    _infoField('Date of Issue', _licence!['issue_date']),
-                    _infoField('Date of Expiry', _licence!['expiry_date']),
-                    const SizedBox(height: 16),
-                    const Text('Source / Company Entries', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    const SizedBox(height: 8),
-                    if (_entries.isEmpty)
-                      const Text('No entries added yet.')
-                    else
-                      ..._entries.map((e) => Card(
-                            margin: const EdgeInsets.only(bottom: 10),
-                            child: Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Company: ${e['company_name']}'),
-                                  Text('Source Type: ${e['source_type'] ?? '-'}'),
-                                  Text('Valid Upto: ${e['valid_upto']}'),
-                                ],
-                              ),
+          : _errorMessage != null
+              ? Center(child: Text(_errorMessage!, style: const TextStyle(color: Colors.red)))
+              : ListView(
+                  padding: const EdgeInsets.all(20),
+                  children: _licenceTypes.map<Widget>((type) {
+                    final licence = _licencesByType[type['id']];
+                    final entries = _entriesByType[type['id']] ?? [];
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(type['name'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+                            const SizedBox(height: 12),
+                            if (licence == null)
+                              const Text('Not added yet.', style: TextStyle(fontSize: 15))
+                            else ...[
+                              _infoField('Licence No', licence['licence_number']),
+                              _infoField('Date of Issue', licence['issue_date']),
+                              _infoField('Date of Expiry', licence['expiry_date']),
+                              const Text('Source / Company Entries', style: TextStyle(fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 8),
+                              if (entries.isEmpty)
+                                const Text('No entries added yet.')
+                              else
+                                ...entries.map((e) => Card(
+                                      margin: const EdgeInsets.only(bottom: 10),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(12),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text('Company: ${e['company_name']}'),
+                                            Text('Source Type: ${e['source_type'] ?? '-'}'),
+                                            Text('Valid Upto: ${e['valid_upto']}'),
+                                          ],
+                                        ),
+                                      ),
+                                    )),
+                              const SizedBox(height: 12),
+                            ],
+                            ElevatedButton(
+                              onPressed: () => _openUpdateScreen(type),
+                              child: Text(licence == null ? 'Add Licence' : 'Update Licence'),
                             ),
-                          )),
-                  ],
-                ],
-              ),
-            ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(20),
-        child: ElevatedButton(
-          onPressed: () async {
-            final result = await Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const UpdateFertilizerLicenceScreen()),
-            );
-            if (result == true) {
-              _loadLicence();
-            }
-          },
-          child: const Text('Add or Update Licence'),
-        ),
-      ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
     );
   }
 }

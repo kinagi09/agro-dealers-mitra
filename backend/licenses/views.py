@@ -1,4 +1,5 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, status
+from rest_framework.response import Response
 from .models import (
     State, District, Taluka, Dealer,
     LicenceCategory, LicenceType, Licence,
@@ -94,17 +95,15 @@ class LicenceViewSet(viewsets.ModelViewSet):
         dealer_id = request.data.get("dealer")
         licence_type_id = request.data.get("licence_type")
         if dealer_id and licence_type_id:
-            licence_type = LicenceType.objects.filter(id=licence_type_id).first()
-            if licence_type:
-                existing = Licence.objects.filter(
-                    dealer_id=dealer_id,
-                    licence_type__category_id=licence_type.category_id,
-                ).first()
-                if existing:
-                    return Response(
-                        {"detail": f"A licence already exists for this category (ID {existing.id}). Please update it instead."},
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
+            existing = Licence.objects.filter(
+                dealer_id=dealer_id,
+                licence_type_id=licence_type_id,
+            ).first()
+            if existing:
+                return Response(
+                    {"detail": f"A licence already exists for this licence type (ID {existing.id}). Please update it instead."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
         return super().create(request, *args, **kwargs)
 
 

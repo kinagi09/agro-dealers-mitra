@@ -2,7 +2,16 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 
 class UpdateSeedLicenceScreen extends StatefulWidget {
-  const UpdateSeedLicenceScreen({super.key});
+  final int licenceTypeId;
+  final String licenceTypeName;
+  final Map<String, dynamic>? existingLicence;
+
+  const UpdateSeedLicenceScreen({
+    super.key,
+    required this.licenceTypeId,
+    required this.licenceTypeName,
+    this.existingLicence,
+  });
 
   @override
   State<UpdateSeedLicenceScreen> createState() => _UpdateSeedLicenceScreenState();
@@ -12,62 +21,22 @@ class _UpdateSeedLicenceScreenState extends State<UpdateSeedLicenceScreen> {
   final ApiService _apiService = ApiService();
   final TextEditingController _licenceNumberController = TextEditingController();
 
-  List<dynamic> _seedLicenceTypes = [];
-  int? _selectedTypeId;
   DateTime? _issueDate;
   DateTime? _expiryDate;
   int? _existingLicenceId;
 
-  bool _isLoadingDropdowns = true;
   bool _isLoading = false;
   String? _errorMessage;
-
-  static const String seedCategoryName = 'Seed';
-  int? _seedCategoryId;
 
   @override
   void initState() {
     super.initState();
-    _loadDropdownData();
-  }
-
-  Future<void> _loadDropdownData() async {
-    try {
-      final categories = await _apiService.getLicenceCategories();
-      final seedCategory = categories.firstWhere(
-        (c) => c['name'] == seedCategoryName,
-        orElse: () => null,
-      );
-      if (seedCategory == null) {
-        setState(() {
-          _errorMessage = 'Seed category not found. Please contact support.';
-          _isLoadingDropdowns = false;
-        });
-        return;
-      }
-      _seedCategoryId = seedCategory['id'];
-
-      final types = await _apiService.getLicenceTypes(_seedCategoryId!);
-      final existingLicences = await _apiService.getMyLicencesByCategory(_seedCategoryId!);
-
-      if (existingLicences.isNotEmpty) {
-        final existing = existingLicences.first as Map<String, dynamic>;
-        _existingLicenceId = existing['id'];
-        _selectedTypeId = existing['licence_type'];
-        _licenceNumberController.text = existing['licence_number'];
-        _issueDate = DateTime.parse(existing['issue_date']);
-        _expiryDate = DateTime.parse(existing['expiry_date']);
-      }
-
-      setState(() {
-        _seedLicenceTypes = types;
-        _isLoadingDropdowns = false;
-      });
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Could not load licence options. Check your connection.';
-        _isLoadingDropdowns = false;
-      });
+    final existing = widget.existingLicence;
+    if (existing != null) {
+      _existingLicenceId = existing['id'];
+      _licenceNumberController.text = existing['licence_number'];
+      _issueDate = DateTime.parse(existing['issue_date']);
+      _expiryDate = DateTime.parse(existing['expiry_date']);
     }
   }
 
@@ -99,10 +68,6 @@ class _UpdateSeedLicenceScreenState extends State<UpdateSeedLicenceScreen> {
   }
 
   Future<void> _submit() async {
-    if (_selectedTypeId == null) {
-      setState(() => _errorMessage = 'The Licence Type field is not filled, please do fill it.');
-      return;
-    }
     if (_licenceNumberController.text.trim().isEmpty) {
       setState(() => _errorMessage = 'The Licence Number field is not filled, please do fill it.');
       return;
@@ -125,7 +90,7 @@ class _UpdateSeedLicenceScreenState extends State<UpdateSeedLicenceScreen> {
       if (_existingLicenceId != null) {
         await _apiService.updateLicence(
           licenceId: _existingLicenceId!,
-          licenceType: _selectedTypeId!,
+          licenceType: widget.licenceTypeId,
           licenceNumber: _licenceNumberController.text.trim(),
           issueDate: _formatDate(_issueDate!),
           expiryDate: _formatDate(_expiryDate!),
@@ -138,7 +103,7 @@ class _UpdateSeedLicenceScreenState extends State<UpdateSeedLicenceScreen> {
         }
         await _apiService.createLicence(
           dealer: dealerId,
-          licenceType: _selectedTypeId!,
+          licenceType: widget.licenceTypeId,
           licenceNumber: _licenceNumberController.text.trim(),
           issueDate: _formatDate(_issueDate!),
           expiryDate: _formatDate(_expiryDate!),
@@ -160,55 +125,62 @@ class _UpdateSeedLicenceScreenState extends State<UpdateSeedLicenceScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Update Seed Licence')),
-      body: _isLoadingDropdowns
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+              decoration: BoxDecoration(
+                color: Colors.brown.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.brown),
+              ),
+              child: Row(
                 children: [
-                  Material(
-                    color: Colors.transparent,
-                    child: DropdownButtonFormField<int>(
-                      initialValue: _selectedTypeId,
-                      decoration: const InputDecoration(labelText: 'Type of Licence', border: OutlineInputBorder()),
-                      items: _seedLicenceTypes
-                          .map<DropdownMenuItem<int>>((t) => DropdownMenuItem(value: t['id'], child: Text(t['name'])))
-                          .toList(),
-                      onChanged: (value) => setState(() => _selectedTypeId = value),
+                  const Icon(Icons.grass, color: Colors.brown),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Licence Type: ${widget.licenceTypeName}',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _licenceNumberController,
-                    decoration: const InputDecoration(labelText: 'Licence Number', border: OutlineInputBorder()),
-                  ),
-                  const SizedBox(height: 12),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(_issueDate == null ? 'Date of Issue of Licence' : 'Date of Issue: ${_formatDate(_issueDate!)}'),
-                    trailing: const Icon(Icons.calendar_today),
-                    onTap: () => _pickLicenceDate(isIssueDate: true),
-                  ),
-                  const Divider(),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(_expiryDate == null ? 'Date of expiry Licence' : 'Date of Expiry: ${_formatDate(_expiryDate!)}'),
-                    trailing: const Icon(Icons.calendar_today),
-                    onTap: () => _pickLicenceDate(isIssueDate: false),
-                  ),
-                  const SizedBox(height: 24),
-                  if (_errorMessage != null) ...[
-                    const SizedBox(height: 16),
-                    Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
-                  ],
-                  ElevatedButton(
-                    onPressed: _isLoading ? null : _submit,
-                    child: _isLoading ? const CircularProgressIndicator() : const Text('Update Licence'),
                   ),
                 ],
               ),
             ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _licenceNumberController,
+              decoration: const InputDecoration(labelText: 'Licence Number', border: OutlineInputBorder()),
+            ),
+            const SizedBox(height: 12),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(_issueDate == null ? 'Date of Issue of Licence' : 'Date of Issue: ${_formatDate(_issueDate!)}'),
+              trailing: const Icon(Icons.calendar_today),
+              onTap: () => _pickLicenceDate(isIssueDate: true),
+            ),
+            const Divider(),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(_expiryDate == null ? 'Date of expiry Licence' : 'Date of Expiry: ${_formatDate(_expiryDate!)}'),
+              trailing: const Icon(Icons.calendar_today),
+              onTap: () => _pickLicenceDate(isIssueDate: false),
+            ),
+            const SizedBox(height: 24),
+            if (_errorMessage != null) ...[
+              const SizedBox(height: 16),
+              Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
+            ],
+            ElevatedButton(
+              onPressed: _isLoading ? null : _submit,
+              child: _isLoading ? const CircularProgressIndicator() : const Text('Update Licence'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
