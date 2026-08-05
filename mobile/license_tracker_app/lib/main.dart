@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'navigation.dart';
 import 'screens/login_screen.dart';
+import 'theme/app_theme.dart';
 
 void main() {
   runApp(const LicenseTrackerApp());
@@ -14,7 +15,7 @@ class LicenseTrackerApp extends StatelessWidget {
     return MaterialApp(
       navigatorKey: navigatorKey,
       title: 'License Tracker',
-      theme: ThemeData(primarySwatch: Colors.green, useMaterial3: true),
+      theme: AppTheme.theme,
       home: const LoginScreen(),
       debugShowCheckedModeBanner: false,
     );

@@ -18,7 +18,10 @@ class ApiService {
 
   // ---------- AUTH ----------
 
-  Future<Map<String, dynamic>> sendOtp(String whatsappNumber, {required String purpose}) async {
+  Future<Map<String, dynamic>> sendOtp(
+    String whatsappNumber, {
+    required String purpose,
+  }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/auth/send-otp/'),
       headers: {'Content-Type': 'application/json'},
@@ -27,11 +30,17 @@ class ApiService {
     return _handleResponse(response);
   }
 
-  Future<Map<String, dynamic>> verifyOtp(String whatsappNumber, String otpCode) async {
+  Future<Map<String, dynamic>> verifyOtp(
+    String whatsappNumber,
+    String otpCode,
+  ) async {
     final response = await http.post(
       Uri.parse('$baseUrl/auth/verify-otp/'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'whatsapp_number': whatsappNumber, 'otp_code': otpCode}),
+      body: jsonEncode({
+        'whatsapp_number': whatsappNumber,
+        'otp_code': otpCode,
+      }),
     );
     return _handleResponse(response);
   }
@@ -59,11 +68,17 @@ class ApiService {
     return data;
   }
 
-  Future<Map<String, dynamic>> login(String whatsappNumber, String otpCode) async {
+  Future<Map<String, dynamic>> login(
+    String whatsappNumber,
+    String otpCode,
+  ) async {
     final response = await http.post(
       Uri.parse('$baseUrl/auth/login/'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'whatsapp_number': whatsappNumber, 'otp_code': otpCode}),
+      body: jsonEncode({
+        'whatsapp_number': whatsappNumber,
+        'otp_code': otpCode,
+      }),
     );
     final data = await _handleResponse(response);
     await _storeTokens(data);
@@ -127,13 +142,17 @@ class ApiService {
   }
 
   Future<List<dynamic>> getDistricts(int stateId) async {
-    final response = await http.get(Uri.parse('$baseUrl/districts/?state=$stateId'));
+    final response = await http.get(
+      Uri.parse('$baseUrl/districts/?state=$stateId'),
+    );
     final data = await _handleResponse(response);
     return data as List<dynamic>;
   }
 
   Future<List<dynamic>> getTalukas(int districtId) async {
-    final response = await http.get(Uri.parse('$baseUrl/talukas/?district=$districtId'));
+    final response = await http.get(
+      Uri.parse('$baseUrl/talukas/?district=$districtId'),
+    );
     final data = await _handleResponse(response);
     return data as List<dynamic>;
   }
@@ -147,7 +166,9 @@ class ApiService {
   }
 
   Future<List<dynamic>> getLicenceTypes(int categoryId) async {
-    final response = await http.get(Uri.parse('$baseUrl/licence-types/?category=$categoryId'));
+    final response = await http.get(
+      Uri.parse('$baseUrl/licence-types/?category=$categoryId'),
+    );
     final data = await _handleResponse(response);
     return data as List<dynamic>;
   }
@@ -196,14 +217,20 @@ class ApiService {
 
   Future<List<dynamic>> getMyLicencesByCategory(int categoryId) async {
     final data = await _authorizedRequest(
-      (headers) => http.get(Uri.parse('$baseUrl/licences/?category=$categoryId'), headers: headers),
+      (headers) => http.get(
+        Uri.parse('$baseUrl/licences/?category=$categoryId'),
+        headers: headers,
+      ),
     );
     return data as List<dynamic>;
   }
 
   Future<List<dynamic>> getLicenceEntries(int licenceId) async {
     final data = await _authorizedRequest(
-      (headers) => http.get(Uri.parse('$baseUrl/licence-entries/?licence=$licenceId'), headers: headers),
+      (headers) => http.get(
+        Uri.parse('$baseUrl/licence-entries/?licence=$licenceId'),
+        headers: headers,
+      ),
     );
     return data as List<dynamic>;
   }
@@ -218,7 +245,10 @@ class ApiService {
 
   Future<Map<String, dynamic>> getMyNotificationPreference() async {
     final data = await _authorizedRequest(
-      (headers) => http.get(Uri.parse('$baseUrl/notification-preferences/'), headers: headers),
+      (headers) => http.get(
+        Uri.parse('$baseUrl/notification-preferences/'),
+        headers: headers,
+      ),
     );
     final list = data as List<dynamic>;
     return list.isNotEmpty ? list.first as Map<String, dynamic> : {};
@@ -234,7 +264,11 @@ class ApiService {
       'whatsapp_enabled': whatsappEnabled,
     });
     return await _authorizedRequest(
-      (headers) => http.patch(Uri.parse('$baseUrl/notification-preferences/$id/'), headers: headers, body: body),
+      (headers) => http.patch(
+        Uri.parse('$baseUrl/notification-preferences/$id/'),
+        headers: headers,
+        body: body,
+      ),
     );
   }
 
@@ -253,7 +287,11 @@ class ApiService {
       'expiry_date': expiryDate,
     });
     return await _authorizedRequest(
-      (headers) => http.post(Uri.parse('$baseUrl/licences/'), headers: headers, body: body),
+      (headers) => http.post(
+        Uri.parse('$baseUrl/licences/'),
+        headers: headers,
+        body: body,
+      ),
     );
   }
 
@@ -271,7 +309,11 @@ class ApiService {
       'expiry_date': expiryDate,
     });
     return await _authorizedRequest(
-      (headers) => http.patch(Uri.parse('$baseUrl/licences/$licenceId/'), headers: headers, body: body),
+      (headers) => http.patch(
+        Uri.parse('$baseUrl/licences/$licenceId/'),
+        headers: headers,
+        body: body,
+      ),
     );
   }
 
@@ -290,7 +332,11 @@ class ApiService {
       'valid_upto': validUpto,
     });
     return await _authorizedRequest(
-      (headers) => http.post(Uri.parse('$baseUrl/licence-entries/'), headers: headers, body: body),
+      (headers) => http.post(
+        Uri.parse('$baseUrl/licence-entries/'),
+        headers: headers,
+        body: body,
+      ),
     );
   }
 
@@ -308,13 +354,20 @@ class ApiService {
       'valid_upto': validUpto,
     });
     return await _authorizedRequest(
-      (headers) => http.patch(Uri.parse('$baseUrl/licence-entries/$entryId/'), headers: headers, body: body),
+      (headers) => http.patch(
+        Uri.parse('$baseUrl/licence-entries/$entryId/'),
+        headers: headers,
+        body: body,
+      ),
     );
   }
 
   Future<void> deleteLicenceEntry(int entryId) async {
     await _authorizedRequest(
-      (headers) => http.delete(Uri.parse('$baseUrl/licence-entries/$entryId/'), headers: headers),
+      (headers) => http.delete(
+        Uri.parse('$baseUrl/licence-entries/$entryId/'),
+        headers: headers,
+      ),
     );
   }
 

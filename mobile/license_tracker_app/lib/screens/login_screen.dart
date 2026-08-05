@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../theme/app_theme.dart';
+import '../widgets/wave_header.dart';
 import 'register_screen.dart';
 import 'home_screen.dart';
 import 'package:flutter/services.dart';
@@ -80,62 +82,144 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Dealer Login')),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextField(
-              controller: _whatsappController,
-              enabled: !_otpSent,
-              keyboardType: TextInputType.phone,
-              maxLength: 10,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              decoration: const InputDecoration(
-                labelText: 'WhatsApp Number',
-                border: OutlineInputBorder(),
-                counterText:
-                    '', // hides the "0/10" counter Flutter shows by default
-              ),
-            ),
-            const SizedBox(height: 16),
-            if (_otpSent)
-              TextField(
-                controller: _otpController,
-                keyboardType: TextInputType.number,
-                maxLength: 6,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                decoration: const InputDecoration(
-                  labelText: 'Enter OTP',
-                  border: OutlineInputBorder(),
-                  counterText: '',
+      body: Column(
+        children: [
+          WaveHeaderHero(
+            height: 300,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const AppLogo(size: 64),
+                const SizedBox(height: 12),
+                const Text(
+                  'Login',
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                 ),
-              ),
-            const SizedBox(height: 16),
-            if (_errorMessage != null)
-              Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _isLoading
-                  ? null
-                  : (_otpSent ? _verifyAndLogin : _sendOtp),
-              child: _isLoading
-                  ? const CircularProgressIndicator()
-                  : Text(_otpSent ? 'Verify & Login' : 'Send OTP'),
+                const SizedBox(height: 8),
+                const Text(
+                  'Enter your details to login',
+                  style: TextStyle(color: Colors.black54),
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
-            TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const RegisterScreen()),
-                );
-              },
-              child: const Text("New dealer? Register here"),
+          ),
+          Expanded(
+            child: Stack(
+              children: [
+                SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 100),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        'WhatsApp Number',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _whatsappController,
+                        enabled: !_otpSent,
+                        keyboardType: TextInputType.phone,
+                        maxLength: 10,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        decoration: const InputDecoration(
+                          hintText: 'Registered WhatsApp Number',
+                          counterText:
+                              '', // hides the "0/10" counter Flutter shows by default
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      if (_otpSent) ...[
+                        const Text(
+                          'OTP',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _otpController,
+                          keyboardType: TextInputType.number,
+                          maxLength: 6,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          decoration: const InputDecoration(
+                            hintText: 'Enter OTP',
+                            counterText: '',
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                      if (_errorMessage != null) ...[
+                        Text(
+                          _errorMessage!,
+                          style: const TextStyle(color: Colors.redAccent),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                      ElevatedButton(
+                        onPressed: _isLoading
+                            ? null
+                            : (_otpSent ? _verifyAndLogin : _sendOtp),
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppColors.midGreen,
+                                ),
+                              )
+                            : Text(_otpSent ? 'Verify & Login' : 'Send OTP'),
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: WaveFooter(
+                    height: 90,
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const RegisterScreen(),
+                          ),
+                        );
+                      },
+                      child: const Text.rich(
+                        TextSpan(
+                          text: "Don't have an account, ",
+                          style: TextStyle(color: Colors.black87),
+                          children: [
+                            TextSpan(
+                              text: 'Sign Up',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

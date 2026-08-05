@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/api_service.dart';
+import '../widgets/wave_header.dart';
 import 'home_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -78,11 +79,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> _sendOtp() async {
     final number = _whatsappController.text.trim();
     if (number.isEmpty) {
-      setState(() => _errorMessage = 'Please enter your WhatsApp number first.');
+      setState(
+        () => _errorMessage = 'Please enter your WhatsApp number first.',
+      );
       return;
     }
     if (number.length != 10) {
-      setState(() => _errorMessage = 'Please enter a valid 10-digit WhatsApp number.');
+      setState(
+        () => _errorMessage = 'Please enter a valid 10-digit WhatsApp number.',
+      );
       return;
     }
     setState(() {
@@ -123,27 +128,45 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _register() async {
     if (_nameController.text.trim().isEmpty) {
-      setState(() => _errorMessage = 'The Name field is not filled, please do fill it.');
+      setState(
+        () =>
+            _errorMessage = 'The Name field is not filled, please do fill it.',
+      );
       return;
     }
     if (_shopNameController.text.trim().isEmpty) {
-      setState(() => _errorMessage = 'The Shop Name field is not filled, please do fill it.');
+      setState(
+        () => _errorMessage =
+            'The Shop Name field is not filled, please do fill it.',
+      );
       return;
     }
     if (_addressController.text.trim().isEmpty) {
-      setState(() => _errorMessage = 'The Address field is not filled, please do fill it.');
+      setState(
+        () => _errorMessage =
+            'The Address field is not filled, please do fill it.',
+      );
       return;
     }
     if (_selectedStateId == null) {
-      setState(() => _errorMessage = 'The State field is not filled, please do fill it.');
+      setState(
+        () =>
+            _errorMessage = 'The State field is not filled, please do fill it.',
+      );
       return;
     }
     if (_selectedDistrictId == null) {
-      setState(() => _errorMessage = 'The District field is not filled, please do fill it.');
+      setState(
+        () => _errorMessage =
+            'The District field is not filled, please do fill it.',
+      );
       return;
     }
     if (_selectedTalukaId == null) {
-      setState(() => _errorMessage = 'The Taluka field is not filled, please do fill it.');
+      setState(
+        () => _errorMessage =
+            'The Taluka field is not filled, please do fill it.',
+      );
       return;
     }
 
@@ -165,9 +188,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
         MaterialPageRoute(builder: (_) => const HomeScreen()),
       );
     } catch (e) {
-      setState(() => _errorMessage = e is ApiException
-          ? (e.errorData['detail'] ?? 'Registration failed.').toString()
-          : 'Registration failed. Check your details and try again.');
+      setState(
+        () => _errorMessage = e is ApiException
+            ? (e.errorData['detail'] ?? 'Registration failed.').toString()
+            : 'Registration failed. Check your details and try again.',
+      );
     } finally {
       setState(() => _isLoading = false);
     }
@@ -176,162 +201,189 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Dealer Registration')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextField(
-              controller: _whatsappController,
-              enabled: !_otpSent,
-              keyboardType: TextInputType.phone,
-              maxLength: 10,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              decoration: const InputDecoration(
-                labelText: 'WhatsApp Number',
-                border: OutlineInputBorder(),
-                counterText: '',
+      body: Column(
+        children: [
+          WaveHeaderHero(
+            height: 220,
+            leading: WaveHeaderIconButton(
+              icon: Icons.arrow_back,
+              onPressed: () => Navigator.pop(context),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const AppLogo(size: 56),
+                const SizedBox(height: 8),
+                const Text(
+                  'Register',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextField(
+                    controller: _whatsappController,
+                    enabled: !_otpSent,
+                    keyboardType: TextInputType.phone,
+                    maxLength: 10,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    decoration: const InputDecoration(
+                      hintText: 'WhatsApp Number',
+                      counterText: '',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  if (!_otpSent)
+                    ElevatedButton(
+                      onPressed: _isLoading ? null : _sendOtp,
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('Send OTP'),
+                    ),
+
+                  if (_otpSent && !_otpVerified) ...[
+                    TextField(
+                      controller: _otpController,
+                      keyboardType: TextInputType.number,
+                      maxLength: 6,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      decoration: const InputDecoration(
+                        hintText: 'Enter OTP',
+                        counterText: '',
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ElevatedButton(
+                      onPressed: _isLoading ? null : _verifyOtp,
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('Verify OTP'),
+                    ),
+                  ],
+
+                  if (_otpVerified) ...[
+                    const SizedBox(height: 12),
+                    const Divider(),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(
+                        hintText: 'Person Full Name',
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _shopNameController,
+                      decoration: const InputDecoration(hintText: 'Firm Name'),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _addressController,
+                      decoration: const InputDecoration(
+                        hintText: 'Firm Address',
+                      ),
+                      maxLines: 2,
+                    ),
+                    const SizedBox(height: 12),
+                    Material(
+                      color: Colors.transparent,
+                      child: DropdownButtonFormField<int>(
+                        initialValue: _selectedStateId,
+                        decoration: const InputDecoration(hintText: 'State'),
+                        items: _states
+                            .map<DropdownMenuItem<int>>(
+                              (s) => DropdownMenuItem(
+                                value: s['id'],
+                                child: Text(s['name']),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: _onStateSelected,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Material(
+                      color: Colors.transparent,
+                      child: DropdownButtonFormField<int>(
+                        initialValue: _selectedDistrictId,
+                        decoration: const InputDecoration(hintText: 'District'),
+                        items: _districts
+                            .map<DropdownMenuItem<int>>(
+                              (d) => DropdownMenuItem(
+                                value: d['id'],
+                                child: Text(d['name']),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: _selectedStateId == null
+                            ? null
+                            : _onDistrictSelected,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Material(
+                      color: Colors.transparent,
+                      child: DropdownButtonFormField<int>(
+                        initialValue: _selectedTalukaId,
+                        decoration: const InputDecoration(hintText: 'Taluka'),
+                        items: _talukas
+                            .map<DropdownMenuItem<int>>(
+                              (t) => DropdownMenuItem(
+                                value: t['id'],
+                                child: Text(t['name']),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: _selectedDistrictId == null
+                            ? null
+                            : (value) =>
+                                  setState(() => _selectedTalukaId = value),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: _isLoading ? null : _register,
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('Complete Registration'),
+                    ),
+                  ],
+
+                  if (_errorMessage != null) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      _errorMessage!,
+                      style: const TextStyle(color: Colors.redAccent),
+                    ),
+                  ],
+                ],
               ),
             ),
-            const SizedBox(height: 12),
-
-            if (!_otpSent)
-              ElevatedButton(
-                onPressed: _isLoading ? null : _sendOtp,
-                child: _isLoading
-                    ? const CircularProgressIndicator()
-                    : const Text('Send OTP'),
-              ),
-
-            if (_otpSent && !_otpVerified) ...[
-              TextField(
-                controller: _otpController,
-                keyboardType: TextInputType.number,
-                maxLength: 6,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                decoration: const InputDecoration(
-                  labelText: 'Enter OTP',
-                  border: OutlineInputBorder(),
-                  counterText: '',
-                ),
-              ),
-              const SizedBox(height: 12),
-              ElevatedButton(
-                onPressed: _isLoading ? null : _verifyOtp,
-                child: _isLoading
-                    ? const CircularProgressIndicator()
-                    : const Text('Verify OTP'),
-              ),
-            ],
-
-            if (_otpVerified) ...[
-              const SizedBox(height: 20),
-              const Divider(),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Your Name',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _shopNameController,
-                decoration: const InputDecoration(
-                  labelText: 'Shop Name',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _addressController,
-                decoration: const InputDecoration(
-                  labelText: 'Address',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 2,
-              ),
-              const SizedBox(height: 12),
-              Material(
-                color: Colors.transparent,
-                child: DropdownButtonFormField<int>(
-                  initialValue: _selectedStateId,
-                  decoration: const InputDecoration(
-                    labelText: 'State',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: _states
-                      .map<DropdownMenuItem<int>>(
-                        (s) => DropdownMenuItem(
-                          value: s['id'],
-                          child: Text(s['name']),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: _onStateSelected,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Material(
-                color: Colors.transparent,
-                child: DropdownButtonFormField<int>(
-                  initialValue: _selectedDistrictId,
-                  decoration: const InputDecoration(
-                    labelText: 'District',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: _districts
-                      .map<DropdownMenuItem<int>>(
-                        (d) => DropdownMenuItem(
-                          value: d['id'],
-                          child: Text(d['name']),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: _selectedStateId == null
-                      ? null
-                      : _onDistrictSelected,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Material(
-                color: Colors.transparent,
-                child: DropdownButtonFormField<int>(
-                  initialValue: _selectedTalukaId,
-                  decoration: const InputDecoration(
-                    labelText: 'Taluka',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: _talukas
-                      .map<DropdownMenuItem<int>>(
-                        (t) => DropdownMenuItem(
-                          value: t['id'],
-                          child: Text(t['name']),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: _selectedDistrictId == null
-                      ? null
-                      : (value) => setState(() => _selectedTalukaId = value),
-                ),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _isLoading ? null : _register,
-                child: _isLoading
-                    ? const CircularProgressIndicator()
-                    : const Text('Complete Registration'),
-              ),
-            ],
-
-            if (_errorMessage != null) ...[
-              const SizedBox(height: 16),
-              Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
-            ],
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

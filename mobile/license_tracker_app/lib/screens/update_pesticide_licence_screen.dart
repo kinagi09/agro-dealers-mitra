@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../widgets/wave_header.dart';
 
 class PesticideEntryDraft {
   int? existingId;
@@ -20,12 +21,15 @@ class UpdatePesticideLicenceScreen extends StatefulWidget {
   });
 
   @override
-  State<UpdatePesticideLicenceScreen> createState() => _UpdatePesticideLicenceScreenState();
+  State<UpdatePesticideLicenceScreen> createState() =>
+      _UpdatePesticideLicenceScreenState();
 }
 
-class _UpdatePesticideLicenceScreenState extends State<UpdatePesticideLicenceScreen> {
+class _UpdatePesticideLicenceScreenState
+    extends State<UpdatePesticideLicenceScreen> {
   final ApiService _apiService = ApiService();
-  final TextEditingController _licenceNumberController = TextEditingController();
+  final TextEditingController _licenceNumberController =
+      TextEditingController();
 
   DateTime? _issueDate;
   DateTime? _expiryDate;
@@ -54,7 +58,9 @@ class _UpdatePesticideLicenceScreenState extends State<UpdatePesticideLicenceScr
         _issueDate = DateTime.parse(existing['issue_date']);
         _expiryDate = DateTime.parse(existing['expiry_date']);
 
-        final existingEntries = await _apiService.getLicenceEntries(_existingLicenceId!);
+        final existingEntries = await _apiService.getLicenceEntries(
+          _existingLicenceId!,
+        );
         if (existingEntries.isNotEmpty) {
           _entries.clear();
           for (final e in existingEntries) {
@@ -70,7 +76,8 @@ class _UpdatePesticideLicenceScreenState extends State<UpdatePesticideLicenceScr
       setState(() => _isLoadingDropdowns = false);
     } catch (e) {
       setState(() {
-        _errorMessage = 'Could not load licence options. Check your connection.';
+        _errorMessage =
+            'Could not load licence options. Check your connection.';
         _isLoadingDropdowns = false;
       });
     }
@@ -81,8 +88,14 @@ class _UpdatePesticideLicenceScreenState extends State<UpdatePesticideLicenceScr
     final today = DateTime(now.year, now.month, now.day);
     final picked = await showDatePicker(
       context: context,
-      initialDate: isIssueDate ? now : (_issueDate?.add(const Duration(days: 1)) ?? today.add(const Duration(days: 1))),
-      firstDate: isIssueDate ? DateTime(2015) : (_issueDate?.add(const Duration(days: 1)) ?? today.add(const Duration(days: 1))),
+      initialDate: isIssueDate
+          ? now
+          : (_issueDate?.add(const Duration(days: 1)) ??
+                today.add(const Duration(days: 1))),
+      firstDate: isIssueDate
+          ? DateTime(2015)
+          : (_issueDate?.add(const Duration(days: 1)) ??
+                today.add(const Duration(days: 1))),
       lastDate: isIssueDate ? now : DateTime(2035),
     );
     if (picked != null) {
@@ -128,10 +141,18 @@ class _UpdatePesticideLicenceScreenState extends State<UpdatePesticideLicenceScr
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Remove Entry'),
-          content: const Text('This will permanently delete this company entry. Continue?'),
+          content: const Text(
+            'This will permanently delete this company entry. Continue?',
+          ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-            TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Remove')),
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Remove'),
+            ),
           ],
         ),
       );
@@ -139,7 +160,10 @@ class _UpdatePesticideLicenceScreenState extends State<UpdatePesticideLicenceScr
       try {
         await _apiService.deleteLicenceEntry(entry.existingId!);
       } catch (e) {
-        setState(() => _errorMessage = 'Could not remove this entry. Please try again.');
+        setState(
+          () =>
+              _errorMessage = 'Could not remove this entry. Please try again.',
+        );
         return;
       }
     }
@@ -149,7 +173,10 @@ class _UpdatePesticideLicenceScreenState extends State<UpdatePesticideLicenceScr
   OutlineInputBorder _fieldBorder(int index, String fieldName) {
     final isError = _errorRowIndex == index && _errorFieldName == fieldName;
     return OutlineInputBorder(
-      borderSide: isError ? const BorderSide(color: Colors.red, width: 2) : const BorderSide(),
+      borderRadius: BorderRadius.circular(12),
+      borderSide: isError
+          ? const BorderSide(color: Colors.red, width: 2)
+          : BorderSide.none,
     );
   }
 
@@ -160,22 +187,32 @@ class _UpdatePesticideLicenceScreenState extends State<UpdatePesticideLicenceScr
     });
 
     if (_licenceNumberController.text.trim().isEmpty) {
-      setState(() => _errorMessage = 'The Licence Number field is not filled, please do fill it.');
+      setState(
+        () => _errorMessage =
+            'The Licence Number field is not filled, please do fill it.',
+      );
       return;
     }
     if (_issueDate == null) {
-      setState(() => _errorMessage = 'The Date of Issue field is not filled, please do fill it.');
+      setState(
+        () => _errorMessage =
+            'The Date of Issue field is not filled, please do fill it.',
+      );
       return;
     }
     if (_expiryDate == null) {
-      setState(() => _errorMessage = 'The Date of Expiry field is not filled, please do fill it.');
+      setState(
+        () => _errorMessage =
+            'The Date of Expiry field is not filled, please do fill it.',
+      );
       return;
     }
     for (var i = 0; i < _entries.length; i++) {
       final entry = _entries[i];
       if (entry.companyNameController.text.trim().isEmpty) {
         setState(() {
-          _errorMessage = 'Row ${i + 1}: Name of Company is not filled, please do fill it.';
+          _errorMessage =
+              'Row ${i + 1}: Name of Company is not filled, please do fill it.';
           _errorRowIndex = i;
           _errorFieldName = 'companyName';
         });
@@ -183,7 +220,8 @@ class _UpdatePesticideLicenceScreenState extends State<UpdatePesticideLicenceScr
       }
       if (entry.validUpto == null) {
         setState(() {
-          _errorMessage = 'Row ${i + 1}: PC Validity Date is not filled, please do fill it.';
+          _errorMessage =
+              'Row ${i + 1}: PC Validity Date is not filled, please do fill it.';
           _errorRowIndex = i;
           _errorFieldName = 'validUpto';
         });
@@ -210,7 +248,10 @@ class _UpdatePesticideLicenceScreenState extends State<UpdatePesticideLicenceScr
       } else {
         final dealerId = await _apiService.getDealerId();
         if (dealerId == null) {
-          setState(() => _errorMessage = 'Could not find your dealer account. Please log in again.');
+          setState(
+            () => _errorMessage =
+                'Could not find your dealer account. Please log in again.',
+          );
           return;
         }
         final licenceResponse = await _apiService.createLicence(
@@ -242,9 +283,11 @@ class _UpdatePesticideLicenceScreenState extends State<UpdatePesticideLicenceScr
       if (!mounted) return;
       Navigator.pop(context, true);
     } catch (e) {
-      setState(() => _errorMessage = e is ApiException
-          ? e.errorData.toString()
-          : 'Failed to save licence. Please check your details and try again.');
+      setState(
+        () => _errorMessage = e is ApiException
+            ? e.errorData.toString()
+            : 'Failed to save licence. Please check your details and try again.',
+      );
     } finally {
       setState(() => _isLoading = false);
     }
@@ -253,122 +296,197 @@ class _UpdatePesticideLicenceScreenState extends State<UpdatePesticideLicenceScr
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Update Pesticide Licence')),
-      body: _isLoadingDropdowns
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
-                    decoration: BoxDecoration(
-                      color: Colors.deepOrange.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.deepOrange),
-                    ),
-                    child: Row(
+      body: Column(
+        children: [
+          WaveHeaderBar(
+            title: 'Update Pesticide Licence',
+            leading: WaveHeaderIconButton(
+              icon: Icons.arrow_back,
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+          Expanded(
+            child: _isLoadingDropdowns
+                ? const Center(child: CircularProgressIndicator())
+                : SingleChildScrollView(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const Icon(Icons.bug_report, color: Colors.deepOrange),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Licence Type: ${widget.licenceTypeName}',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 14,
                           ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.bug_report,
+                                color: Colors.deepOrange,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Licence Type: ${widget.licenceTypeName}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: _licenceNumberController,
+                          decoration: const InputDecoration(
+                            hintText: 'Licence Number',
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        ListTile(
+                          tileColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          title: Text(
+                            _issueDate == null
+                                ? 'Select Date of Issue'
+                                : 'Date of Issue: ${_formatDate(_issueDate!)}',
+                          ),
+                          trailing: const Icon(Icons.calendar_today),
+                          onTap: () => _pickLicenceDate(isIssueDate: true),
+                        ),
+                        const SizedBox(height: 10),
+                        ListTile(
+                          tileColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          title: Text(
+                            _expiryDate == null
+                                ? 'Select Date of Expiry'
+                                : 'Date of Expiry: ${_formatDate(_expiryDate!)}',
+                          ),
+                          trailing: const Icon(Icons.calendar_today),
+                          onTap: () => _pickLicenceDate(isIssueDate: false),
+                        ),
+                        const SizedBox(height: 24),
+                        const Text(
+                          'Company Entries',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        ..._entries.asMap().entries.map((mapEntry) {
+                          final index = mapEntry.key;
+                          final entry = mapEntry.value;
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Row ${index + 1}',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const Spacer(),
+                                      if (_entries.length > 1)
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.delete_outline,
+                                            color: Colors.red,
+                                          ),
+                                          onPressed: () => _removeRow(index),
+                                        ),
+                                    ],
+                                  ),
+                                  TextField(
+                                    controller: entry.companyNameController,
+                                    decoration: InputDecoration(
+                                      labelText:
+                                          'Name of Company (Manufacturer)',
+                                      border: _fieldBorder(
+                                        index,
+                                        'companyName',
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      border:
+                                          (_errorRowIndex == index &&
+                                              _errorFieldName == 'validUpto')
+                                          ? Border.all(
+                                              color: Colors.red,
+                                              width: 2,
+                                            )
+                                          : null,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: ListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      title: Text(
+                                        entry.validUpto == null
+                                            ? 'Select PC Validity Date'
+                                            : 'PC Validity Date: ${_formatDate(entry.validUpto!)}',
+                                      ),
+                                      trailing: const Icon(
+                                        Icons.calendar_today,
+                                      ),
+                                      onTap: () => _pickValidUpto(entry),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }),
+                        OutlinedButton.icon(
+                          onPressed: _addRow,
+                          icon: const Icon(Icons.add),
+                          label: const Text('Add Another Company'),
+                        ),
+                        const SizedBox(height: 24),
+                        if (_errorMessage != null) ...[
+                          Text(
+                            _errorMessage!,
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                        ElevatedButton(
+                          onPressed: _isLoading ? null : _submit,
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text('Save Pesticide Licence'),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _licenceNumberController,
-                    decoration: const InputDecoration(labelText: 'Licence Number', border: OutlineInputBorder()),
-                  ),
-                  const SizedBox(height: 12),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(_issueDate == null ? 'Select Date of Issue' : 'Date of Issue: ${_formatDate(_issueDate!)}'),
-                    trailing: const Icon(Icons.calendar_today),
-                    onTap: () => _pickLicenceDate(isIssueDate: true),
-                  ),
-                  const Divider(),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(_expiryDate == null ? 'Select Date of Expiry' : 'Date of Expiry: ${_formatDate(_expiryDate!)}'),
-                    trailing: const Icon(Icons.calendar_today),
-                    onTap: () => _pickLicenceDate(isIssueDate: false),
-                  ),
-                  const SizedBox(height: 24),
-                  const Text('Company Entries', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  const SizedBox(height: 8),
-                  ..._entries.asMap().entries.map((mapEntry) {
-                    final index = mapEntry.key;
-                    final entry = mapEntry.value;
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                Text('Row ${index + 1}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                                const Spacer(),
-                                if (_entries.length > 1)
-                                  IconButton(
-                                    icon: const Icon(Icons.delete_outline, color: Colors.red),
-                                    onPressed: () => _removeRow(index),
-                                  ),
-                              ],
-                            ),
-                            TextField(
-                              controller: entry.companyNameController,
-                              decoration: InputDecoration(
-                                labelText: 'Name of Company (Manufacturer)',
-                                border: _fieldBorder(index, 'companyName'),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Container(
-                              decoration: BoxDecoration(
-                                border: (_errorRowIndex == index && _errorFieldName == 'validUpto')
-                                    ? Border.all(color: Colors.red, width: 2)
-                                    : null,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                title: Text(entry.validUpto == null
-                                    ? 'Select PC Validity Date'
-                                    : 'PC Validity Date: ${_formatDate(entry.validUpto!)}'),
-                                trailing: const Icon(Icons.calendar_today),
-                                onTap: () => _pickValidUpto(entry),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }),
-                  OutlinedButton.icon(
-                    onPressed: _addRow,
-                    icon: const Icon(Icons.add),
-                    label: const Text('Add Another Company'),
-                  ),
-                  const SizedBox(height: 24),
-                  if (_errorMessage != null) ...[
-                    Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
-                    const SizedBox(height: 12),
-                  ],
-                  ElevatedButton(
-                    onPressed: _isLoading ? null : _submit,
-                    child: _isLoading ? const CircularProgressIndicator() : const Text('Save Pesticide Licence'),
-                  ),
-                ],
-              ),
-            ),
+          ),
+        ],
+      ),
     );
   }
 }
