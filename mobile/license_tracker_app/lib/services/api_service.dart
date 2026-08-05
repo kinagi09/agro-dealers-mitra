@@ -6,7 +6,14 @@ import '../navigation.dart';
 import '../screens/login_screen.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://10.15.175.232:8000/api';
+  /// Override at build/run time with:
+  ///   flutter run --dart-define=API_BASE_URL=http://YOUR_PC_IP:8000/api
+  /// Defaults to the current dev machine's LAN IP so existing workflows
+  /// keep working without extra setup.
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'http://10.15.175.232:8000/api',
+  );
   final storage = const FlutterSecureStorage();
 
   // ---------- AUTH ----------
@@ -207,6 +214,28 @@ class ApiService {
     );
     final list = data as List<dynamic>;
     return list.isNotEmpty ? list.first as Map<String, dynamic> : {};
+  }
+
+  Future<Map<String, dynamic>> getMyNotificationPreference() async {
+    final data = await _authorizedRequest(
+      (headers) => http.get(Uri.parse('$baseUrl/notification-preferences/'), headers: headers),
+    );
+    final list = data as List<dynamic>;
+    return list.isNotEmpty ? list.first as Map<String, dynamic> : {};
+  }
+
+  Future<Map<String, dynamic>> updateNotificationPreference({
+    required int id,
+    required bool pushEnabled,
+    required bool whatsappEnabled,
+  }) async {
+    final body = jsonEncode({
+      'push_enabled': pushEnabled,
+      'whatsapp_enabled': whatsappEnabled,
+    });
+    return await _authorizedRequest(
+      (headers) => http.patch(Uri.parse('$baseUrl/notification-preferences/$id/'), headers: headers, body: body),
+    );
   }
 
   Future<Map<String, dynamic>> createLicence({

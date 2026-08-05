@@ -90,6 +90,7 @@ class RegisterDealerView(APIView):
 
         dealer = dealer_serializer.save(user=user)
         NotificationPreference.objects.create(dealer=dealer)
+        verified_otp.delete()
 
         refresh = RefreshToken.for_user(user)
         return Response({
@@ -120,8 +121,7 @@ class LoginView(APIView):
         except Dealer.DoesNotExist:
             return Response({"detail": "No account found for this number."}, status=status.HTTP_404_NOT_FOUND)
 
-        otp_entry.is_verified = True
-        otp_entry.save()
+        otp_entry.delete()
 
         refresh = RefreshToken.for_user(dealer.user)
         return Response({

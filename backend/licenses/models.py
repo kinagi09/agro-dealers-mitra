@@ -196,6 +196,7 @@ class NotificationLog(models.Model):
         ("PENDING", "Pending"),
         ("SENT", "Sent"),
         ("FAILED", "Failed"),
+        ("STUBBED", "Stubbed (not actually sent)"),
     ]
 
     dealer = models.ForeignKey(

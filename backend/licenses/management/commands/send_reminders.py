@@ -31,7 +31,7 @@ class Command(BaseCommand):
                 dealer=dealer,
                 licence=licence,
                 channel="WHATSAPP",
-                status="SENT",
+                status="STUBBED",
                 message_content=message,
             )
 
