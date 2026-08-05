@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../navigation.dart';
+import '../screens/login_screen.dart';
 
 class ApiService {
   static const String baseUrl = 'http://10.15.175.232:8000/api';
@@ -95,6 +98,19 @@ class ApiService {
     await storage.deleteAll();
   }
 
+  /// Clears the session and bounces the user back to the login screen.
+  /// Called whenever a request comes back 401 and the refresh attempt fails.
+  Future<void> _forceLogout() async {
+    await logout();
+    final state = navigatorKey.currentState;
+    if (state != null) {
+      state.pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        (route) => false,
+      );
+    }
+  }
+
   // ---------- LOCATION DROPDOWNS ----------
 
   Future<List<dynamic>> getStates() async {
@@ -145,75 +161,50 @@ class ApiService {
     };
   }
 
-  Future<List<dynamic>> getMyLicences() async {
-    var response = await http.get(
-      Uri.parse('$baseUrl/licences/'),
-      headers: await _authHeaders(),
-    );
+  /// Performs an authenticated request, retrying once after a token refresh
+  /// on a 401. If the refresh itself fails, the session is cleared and the
+  /// user is sent back to the login screen instead of surfacing a generic
+  /// "check your connection" error.
+  Future<dynamic> _authorizedRequest(
+    Future<http.Response> Function(Map<String, String> headers) request,
+  ) async {
+    var response = await request(await _authHeaders());
     if (response.statusCode == 401) {
       final refreshed = await _refreshAccessToken();
-      if (refreshed) {
-        response = await http.get(
-          Uri.parse('$baseUrl/licences/'),
-          headers: await _authHeaders(),
-        );
+      if (!refreshed) {
+        await _forceLogout();
+        throw SessionExpiredException();
       }
+      response = await request(await _authHeaders());
     }
-    final data = await _handleResponse(response);
+    return _handleResponse(response);
+  }
+
+  Future<List<dynamic>> getMyLicences() async {
+    final data = await _authorizedRequest(
+      (headers) => http.get(Uri.parse('$baseUrl/licences/'), headers: headers),
+    );
     return data as List<dynamic>;
   }
 
   Future<List<dynamic>> getMyLicencesByCategory(int categoryId) async {
-    var response = await http.get(
-      Uri.parse('$baseUrl/licences/?category=$categoryId'),
-      headers: await _authHeaders(),
+    final data = await _authorizedRequest(
+      (headers) => http.get(Uri.parse('$baseUrl/licences/?category=$categoryId'), headers: headers),
     );
-    if (response.statusCode == 401) {
-      final refreshed = await _refreshAccessToken();
-      if (refreshed) {
-        response = await http.get(
-          Uri.parse('$baseUrl/licences/?category=$categoryId'),
-          headers: await _authHeaders(),
-        );
-      }
-    }
-    final data = await _handleResponse(response);
     return data as List<dynamic>;
   }
 
   Future<List<dynamic>> getLicenceEntries(int licenceId) async {
-    var response = await http.get(
-      Uri.parse('$baseUrl/licence-entries/?licence=$licenceId'),
-      headers: await _authHeaders(),
+    final data = await _authorizedRequest(
+      (headers) => http.get(Uri.parse('$baseUrl/licence-entries/?licence=$licenceId'), headers: headers),
     );
-    if (response.statusCode == 401) {
-      final refreshed = await _refreshAccessToken();
-      if (refreshed) {
-        response = await http.get(
-          Uri.parse('$baseUrl/licence-entries/?licence=$licenceId'),
-          headers: await _authHeaders(),
-        );
-      }
-    }
-    final data = await _handleResponse(response);
     return data as List<dynamic>;
   }
 
   Future<Map<String, dynamic>> getMyDealerProfile() async {
-    var response = await http.get(
-      Uri.parse('$baseUrl/dealers/'),
-      headers: await _authHeaders(),
+    final data = await _authorizedRequest(
+      (headers) => http.get(Uri.parse('$baseUrl/dealers/'), headers: headers),
     );
-    if (response.statusCode == 401) {
-      final refreshed = await _refreshAccessToken();
-      if (refreshed) {
-        response = await http.get(
-          Uri.parse('$baseUrl/dealers/'),
-          headers: await _authHeaders(),
-        );
-      }
-    }
-    final data = await _handleResponse(response);
     final list = data as List<dynamic>;
     return list.isNotEmpty ? list.first as Map<String, dynamic> : {};
   }
@@ -232,22 +223,9 @@ class ApiService {
       'issue_date': issueDate,
       'expiry_date': expiryDate,
     });
-    var response = await http.post(
-      Uri.parse('$baseUrl/licences/'),
-      headers: await _authHeaders(),
-      body: body,
+    return await _authorizedRequest(
+      (headers) => http.post(Uri.parse('$baseUrl/licences/'), headers: headers, body: body),
     );
-    if (response.statusCode == 401) {
-      final refreshed = await _refreshAccessToken();
-      if (refreshed) {
-        response = await http.post(
-          Uri.parse('$baseUrl/licences/'),
-          headers: await _authHeaders(),
-          body: body,
-        );
-      }
-    }
-    return _handleResponse(response);
   }
 
   Future<Map<String, dynamic>> updateLicence({
@@ -263,22 +241,9 @@ class ApiService {
       'issue_date': issueDate,
       'expiry_date': expiryDate,
     });
-    var response = await http.patch(
-      Uri.parse('$baseUrl/licences/$licenceId/'),
-      headers: await _authHeaders(),
-      body: body,
+    return await _authorizedRequest(
+      (headers) => http.patch(Uri.parse('$baseUrl/licences/$licenceId/'), headers: headers, body: body),
     );
-    if (response.statusCode == 401) {
-      final refreshed = await _refreshAccessToken();
-      if (refreshed) {
-        response = await http.patch(
-          Uri.parse('$baseUrl/licences/$licenceId/'),
-          headers: await _authHeaders(),
-          body: body,
-        );
-      }
-    }
-    return _handleResponse(response);
   }
 
   Future<Map<String, dynamic>> createLicenceEntry({
@@ -295,22 +260,9 @@ class ApiService {
       'fertilizer_type': fertilizerType ?? [],
       'valid_upto': validUpto,
     });
-    var response = await http.post(
-      Uri.parse('$baseUrl/licence-entries/'),
-      headers: await _authHeaders(),
-      body: body,
+    return await _authorizedRequest(
+      (headers) => http.post(Uri.parse('$baseUrl/licence-entries/'), headers: headers, body: body),
     );
-    if (response.statusCode == 401) {
-      final refreshed = await _refreshAccessToken();
-      if (refreshed) {
-        response = await http.post(
-          Uri.parse('$baseUrl/licence-entries/'),
-          headers: await _authHeaders(),
-          body: body,
-        );
-      }
-    }
-    return _handleResponse(response);
   }
 
   Future<Map<String, dynamic>> updateLicenceEntry({
@@ -326,22 +278,9 @@ class ApiService {
       'fertilizer_type': fertilizerType ?? [],
       'valid_upto': validUpto,
     });
-    var response = await http.patch(
-      Uri.parse('$baseUrl/licence-entries/$entryId/'),
-      headers: await _authHeaders(),
-      body: body,
+    return await _authorizedRequest(
+      (headers) => http.patch(Uri.parse('$baseUrl/licence-entries/$entryId/'), headers: headers, body: body),
     );
-    if (response.statusCode == 401) {
-      final refreshed = await _refreshAccessToken();
-      if (refreshed) {
-        response = await http.patch(
-          Uri.parse('$baseUrl/licence-entries/$entryId/'),
-          headers: await _authHeaders(),
-          body: body,
-        );
-      }
-    }
-    return _handleResponse(response);
   }
 
   // ---------- SHARED RESPONSE HANDLER ----------
@@ -362,4 +301,12 @@ class ApiException implements Exception {
 
   @override
   String toString() => errorData.toString();
+}
+
+/// Thrown when a session can't be refreshed; the user has already been
+/// routed to the login screen by the time this is thrown, so callers can
+/// generally let it propagate and be ignored by the caught catch-all.
+class SessionExpiredException implements Exception {
+  @override
+  String toString() => 'Session expired';
 }

@@ -101,14 +101,6 @@ class _HomeScreenState extends State<HomeScreen> {
               title: const Text('Home'),
               onTap: () => Navigator.pop(context),
             ),
-            ListTile(
-              leading: const Icon(Icons.person_outline),
-              title: const Text('My Profile'),
-              onTap: () {
-                Navigator.pop(context);
-                // Profile screen not built yet
-              },
-            ),
             const Divider(),
             ListTile(
               leading: const Icon(Icons.logout),

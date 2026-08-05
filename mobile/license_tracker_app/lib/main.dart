@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'navigation.dart';
 import 'screens/login_screen.dart';
 
 void main() {
@@ -11,6 +12,7 @@ class LicenseTrackerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'License Tracker',
       theme: ThemeData(primarySwatch: Colors.green, useMaterial3: true),
       home: const LoginScreen(),

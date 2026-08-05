@@ -53,7 +53,7 @@ class LicenceSerializer(serializers.ModelSerializer):
         model = Licence
         fields = [
             "id", "dealer", "dealer_name", "licence_type", "licence_type_name",
-            "licence_number", "issue_date", "expiry_date", "status", "created_at", "updated_at",         
+            "licence_number", "issue_date", "expiry_date", "status", "created_at", "updated_at",
         ]
         read_only_fields = ["id", "status", "created_at", "updated_at"]
 
