@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
-import '../widgets/wave_header.dart';
 import 'update_pesticide_licence_screen.dart';
 
 class PesticideLicenceScreen extends StatefulWidget {
@@ -72,18 +71,19 @@ class _PesticideLicenceScreenState extends State<PesticideLicenceScreen> {
     }
   }
 
-  Widget _infoField(String label, String value) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Text(
-        '$label: $value',
-        style: const TextStyle(fontSize: 15, color: Colors.black87),
+  Widget _infoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        children: [
+          Text('$label: ', style: const TextStyle(color: Colors.black54)),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -107,127 +107,92 @@ class _PesticideLicenceScreenState extends State<PesticideLicenceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          WaveHeaderBar(
-            title: 'Pesticide Licence',
-            leading: WaveHeaderIconButton(
-              icon: Icons.arrow_back,
-              onPressed: () => Navigator.pop(context),
-            ),
-          ),
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _errorMessage != null
-                ? Center(
-                    child: Text(
-                      _errorMessage!,
-                      style: const TextStyle(color: Colors.redAccent),
-                    ),
-                  )
-                : ListView(
-                    padding: const EdgeInsets.all(20),
-                    children: _licenceTypes.map<Widget>((type) {
-                      final licence = _licencesByType[type['id']];
-                      final entries = _entriesByType[type['id']] ?? [];
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Text(
-                                type['name'],
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 17,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              if (licence == null)
-                                const Text(
-                                  'Not added yet.',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    color: Colors.black54,
-                                  ),
-                                )
-                              else ...[
-                                _infoField(
-                                  'Licence No',
-                                  licence['licence_number'],
-                                ),
-                                _infoField(
-                                  'Date of Issue',
-                                  licence['issue_date'],
-                                ),
-                                _infoField(
-                                  'Date of Expiry',
-                                  licence['expiry_date'],
-                                ),
-                                const Text(
-                                  'Company Entries',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                if (entries.isEmpty)
-                                  const Text(
-                                    'No entries added yet.',
-                                    style: TextStyle(color: Colors.black54),
-                                  )
-                                else
-                                  ...entries.map(
-                                    (e) => Card(
-                                      color: Colors.grey.shade100,
-                                      margin: const EdgeInsets.only(bottom: 10),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(12),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Company: ${e['company_name']}',
-                                              style: const TextStyle(
-                                                color: Colors.black87,
-                                              ),
-                                            ),
-                                            Text(
-                                              'PC Validity Date: ${e['valid_upto']}',
-                                              style: const TextStyle(
-                                                color: Colors.black87,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                const SizedBox(height: 12),
-                              ],
-                              ElevatedButton(
-                                onPressed: () => _openUpdateScreen(type),
-                                child: Text(
-                                  licence == null
-                                      ? 'Add Licence'
-                                      : 'Update Licence',
-                                ),
-                              ),
-                            ],
+      appBar: AppBar(title: const Text('Pesticide Licence')),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _errorMessage != null
+          ? Center(
+              child: Text(
+                _errorMessage!,
+                style: const TextStyle(color: Colors.red),
+              ),
+            )
+          : ListView(
+              padding: const EdgeInsets.all(16),
+              children: _licenceTypes.map<Widget>((type) {
+                final licence = _licencesByType[type['id']];
+                final entries = _entriesByType[type['id']] ?? [];
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          type['name'],
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
                           ),
                         ),
-                      );
-                    }).toList(),
+                        const SizedBox(height: 10),
+                        if (licence == null)
+                          const Text(
+                            'Not added yet.',
+                            style: TextStyle(color: Colors.black54),
+                          )
+                        else ...[
+                          _infoRow('Licence No', licence['licence_number']),
+                          _infoRow('Date of Issue', licence['issue_date']),
+                          _infoRow('Date of Expiry', licence['expiry_date']),
+                          const SizedBox(height: 4),
+                          const Text(
+                            'Company Entries',
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          if (entries.isEmpty)
+                            const Padding(
+                              padding: EdgeInsets.only(top: 6),
+                              child: Text(
+                                'No entries added yet.',
+                                style: TextStyle(color: Colors.black54),
+                              ),
+                            )
+                          else
+                            ...entries.map(
+                              (e) => Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(e['company_name']),
+                                    Text(
+                                      'PC Validity Date: ${e['valid_upto']}',
+                                      style: const TextStyle(
+                                        color: Colors.black54,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                    const Divider(height: 16),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          const SizedBox(height: 8),
+                        ],
+                        ElevatedButton(
+                          onPressed: () => _openUpdateScreen(type),
+                          child: Text(
+                            licence == null ? 'Add Licence' : 'Update Licence',
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-          ),
-        ],
-      ),
+                );
+              }).toList(),
+            ),
     );
   }
 }

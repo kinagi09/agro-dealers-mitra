@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
-import '../widgets/wave_header.dart';
 
 class UpdateSeedLicenceScreen extends StatefulWidget {
   final int licenceTypeId;
@@ -147,104 +146,68 @@ class _UpdateSeedLicenceScreenState extends State<UpdateSeedLicenceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          WaveHeaderBar(
-            title: 'Update Seed Licence',
-            leading: WaveHeaderIconButton(
-              icon: Icons.arrow_back,
-              onPressed: () => Navigator.pop(context),
+      appBar: AppBar(title: const Text('Update Seed Licence')),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.grass, color: Colors.brown, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Licence Type: ${widget.licenceTypeName}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
             ),
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 12,
-                      horizontal: 14,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.grass, color: Colors.brown),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Licence Type: ${widget.licenceTypeName}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _licenceNumberController,
-                    decoration: const InputDecoration(
-                      hintText: 'Licence Number',
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  ListTile(
-                    tileColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    title: Text(
-                      _issueDate == null
-                          ? 'Date of Issue of Licence'
-                          : 'Date of Issue: ${_formatDate(_issueDate!)}',
-                    ),
-                    trailing: const Icon(Icons.calendar_today),
-                    onTap: () => _pickLicenceDate(isIssueDate: true),
-                  ),
-                  const SizedBox(height: 10),
-                  ListTile(
-                    tileColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    title: Text(
-                      _expiryDate == null
-                          ? 'Date of expiry Licence'
-                          : 'Date of Expiry: ${_formatDate(_expiryDate!)}',
-                    ),
-                    trailing: const Icon(Icons.calendar_today),
-                    onTap: () => _pickLicenceDate(isIssueDate: false),
-                  ),
-                  const SizedBox(height: 24),
-                  if (_errorMessage != null) ...[
-                    const SizedBox(height: 16),
-                    Text(
-                      _errorMessage!,
-                      style: const TextStyle(color: Colors.redAccent),
-                    ),
-                  ],
-                  ElevatedButton(
-                    onPressed: _isLoading ? null : _submit,
-                    child: _isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Update Licence'),
-                  ),
-                ],
+            const SizedBox(height: 16),
+            TextField(
+              controller: _licenceNumberController,
+              decoration: const InputDecoration(hintText: 'Licence Number'),
+            ),
+            const SizedBox(height: 12),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(
+                _issueDate == null
+                    ? 'Date of Issue of Licence'
+                    : 'Date of Issue: ${_formatDate(_issueDate!)}',
               ),
+              trailing: const Icon(Icons.calendar_today),
+              onTap: () => _pickLicenceDate(isIssueDate: true),
             ),
-          ),
-        ],
+            const Divider(height: 1),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(
+                _expiryDate == null
+                    ? 'Date of expiry Licence'
+                    : 'Date of Expiry: ${_formatDate(_expiryDate!)}',
+              ),
+              trailing: const Icon(Icons.calendar_today),
+              onTap: () => _pickLicenceDate(isIssueDate: false),
+            ),
+            const SizedBox(height: 24),
+            if (_errorMessage != null) ...[
+              const SizedBox(height: 16),
+              Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
+            ],
+            ElevatedButton(
+              onPressed: _isLoading ? null : _submit,
+              child: _isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Update Licence'),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
-import '../widgets/wave_header.dart';
 
 class NotificationSettingsScreen extends StatefulWidget {
   const NotificationSettingsScreen({super.key});
@@ -79,59 +78,47 @@ class _NotificationSettingsScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          WaveHeaderBar(
-            title: 'Notification Settings',
-            leading: WaveHeaderIconButton(
-              icon: Icons.arrow_back,
-              onPressed: () => Navigator.pop(context),
-            ),
-          ),
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        if (_errorMessage != null) ...[
-                          Text(
-                            _errorMessage!,
-                            style: const TextStyle(color: Colors.redAccent),
-                          ),
-                          const SizedBox(height: 16),
-                        ],
-                        Card(
-                          child: SwitchListTile(
-                            title: const Text('Push Notifications'),
-                            subtitle: const Text(
-                              'Get reminders as app notifications',
-                            ),
-                            value: _pushEnabled,
-                            onChanged: _isSaving
-                                ? null
-                                : (value) => _save(pushEnabled: value),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Card(
-                          child: SwitchListTile(
-                            title: const Text('WhatsApp Notifications'),
-                            subtitle: const Text('Get reminders on WhatsApp'),
-                            value: _whatsappEnabled,
-                            onChanged: _isSaving
-                                ? null
-                                : (value) => _save(whatsappEnabled: value),
-                          ),
-                        ),
-                      ],
+      appBar: AppBar(title: const Text('Notification Settings')),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (_errorMessage != null) ...[
+                    Text(
+                      _errorMessage!,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  Card(
+                    child: SwitchListTile(
+                      title: const Text('Push Notifications'),
+                      subtitle: const Text(
+                        'Get reminders as app notifications',
+                      ),
+                      value: _pushEnabled,
+                      onChanged: _isSaving
+                          ? null
+                          : (value) => _save(pushEnabled: value),
                     ),
                   ),
-          ),
-        ],
-      ),
+                  const SizedBox(height: 12),
+                  Card(
+                    child: SwitchListTile(
+                      title: const Text('WhatsApp Notifications'),
+                      subtitle: const Text('Get reminders on WhatsApp'),
+                      value: _whatsappEnabled,
+                      onChanged: _isSaving
+                          ? null
+                          : (value) => _save(whatsappEnabled: value),
+                    ),
+                  ),
+                ],
+              ),
+            ),
     );
   }
 }

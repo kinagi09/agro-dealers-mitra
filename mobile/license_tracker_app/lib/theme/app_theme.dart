@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 
-/// Brand palette — dark green body, bright green wave accents, white cards.
+/// Brand palette — white base, yellow accents, green/black text.
 class AppColors {
   AppColors._();
 
-  static const brightGreen = Color(0xFF3CB043);
-  static const midGreen = Color(0xFF216E39);
-  static const darkGreen = Color(0xFF0A2E14);
+  static const green = Color(0xFF216E39);
+  static const yellow = Color(0xFFFFC107);
+  static const black = Color(0xFF1A1A1A);
   static const white = Colors.white;
+  static const greyBorder = Color(0xFFE0E0E0);
 }
 
 class AppTheme {
@@ -16,37 +17,54 @@ class AppTheme {
   static ThemeData get theme {
     return ThemeData(
       useMaterial3: true,
-      scaffoldBackgroundColor: AppColors.darkGreen,
-      // Light scheme: most surfaces in this app (cards, inputs) are white,
-      // so default text/icons should default to dark. The dark green body
-      // is chrome-only and is hand-colored white where text sits on it
-      // directly (headers, drawer) rather than flipping the whole theme.
+      scaffoldBackgroundColor: AppColors.white,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.brightGreen,
+        seedColor: AppColors.green,
         brightness: Brightness.light,
-        primary: AppColors.brightGreen,
+        primary: AppColors.green,
+        secondary: AppColors.yellow,
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: AppColors.white,
+        foregroundColor: AppColors.green,
+        elevation: 0,
+        scrolledUnderElevation: 1,
+        centerTitle: false,
+        titleTextStyle: TextStyle(
+          color: AppColors.green,
+          fontWeight: FontWeight.bold,
+          fontSize: 20,
+        ),
+        iconTheme: IconThemeData(color: AppColors.green),
+      ),
+      textTheme: const TextTheme().apply(
+        bodyColor: AppColors.black,
+        displayColor: AppColors.black,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.white,
-          foregroundColor: Colors.black87,
+          backgroundColor: AppColors.yellow,
+          foregroundColor: AppColors.black,
           textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(12),
           ),
-          elevation: 2,
+          elevation: 0,
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.white,
-          side: const BorderSide(color: AppColors.white),
+          foregroundColor: AppColors.green,
+          side: const BorderSide(color: AppColors.green),
           padding: const EdgeInsets.symmetric(vertical: 14),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(foregroundColor: AppColors.green),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
@@ -56,19 +74,19 @@ class AppTheme {
           vertical: 14,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.greyBorder),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.greyBorder),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.midGreen, width: 2),
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.green, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(color: Colors.red, width: 2),
         ),
         labelStyle: const TextStyle(color: Colors.black54),
@@ -76,20 +94,28 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         color: AppColors.white,
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: AppColors.greyBorder),
+        ),
         margin: EdgeInsets.zero,
       ),
-      dividerTheme: const DividerThemeData(color: Colors.white24),
-      drawerTheme: const DrawerThemeData(backgroundColor: AppColors.darkGreen),
+      dividerTheme: const DividerThemeData(color: AppColors.greyBorder),
+      drawerTheme: const DrawerThemeData(backgroundColor: AppColors.white),
       progressIndicatorTheme: const ProgressIndicatorThemeData(
-        color: AppColors.brightGreen,
+        color: AppColors.green,
       ),
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith(
           (states) => states.contains(WidgetState.selected)
-              ? AppColors.brightGreen
+              ? AppColors.yellow
               : Colors.grey,
+        ),
+        trackColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? AppColors.yellow.withValues(alpha: 0.4)
+              : Colors.grey.shade300,
         ),
       ),
     );
