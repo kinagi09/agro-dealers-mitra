@@ -84,15 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_isLoading ? '' : 'Hi, ${_shopName ?? ''}'),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: AppLogo(size: 32),
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Home')),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -149,6 +141,28 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            if (_isLoading)
+              const Padding(
+                padding: EdgeInsets.only(bottom: 12),
+                child: LinearProgressIndicator(minHeight: 2),
+              )
+            else ...[
+              const Text(
+                'Hello,',
+                style: TextStyle(fontSize: 15, color: Colors.black54),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                _shopName ?? '',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Divider(),
+              const SizedBox(height: 8),
+            ],
             _categoryButton(
               label: 'Fertilizer Licence',
               icon: Icons.eco,
