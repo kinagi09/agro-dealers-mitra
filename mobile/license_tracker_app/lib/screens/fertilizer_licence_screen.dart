@@ -20,6 +20,21 @@ class _FertilizerLicenceScreenState extends State<FertilizerLicenceScreen> {
 
   static const String fertilizerCategoryName = 'Fertilizer';
 
+  // Display order: Retail Dealer, District Wholesale Dealer, State Wholesale
+  // Dealer - not alphabetical, so sort explicitly rather than relying on the
+  // API's default (name) ordering.
+  static const List<String> _typeOrderKeywords = [
+    'retail',
+    'district',
+    'state',
+  ];
+
+  int _typeSortOrder(String name) {
+    final lower = name.toLowerCase();
+    final index = _typeOrderKeywords.indexWhere((k) => lower.contains(k));
+    return index == -1 ? _typeOrderKeywords.length : index;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -45,6 +60,10 @@ class _FertilizerLicenceScreenState extends State<FertilizerLicenceScreen> {
         return;
       }
       final types = await _apiService.getLicenceTypes(category['id']);
+      types.sort(
+        (a, b) =>
+            _typeSortOrder(a['name']).compareTo(_typeSortOrder(b['name'])),
+      );
       final licences = await _apiService.getMyLicencesByCategory(
         category['id'],
       );
