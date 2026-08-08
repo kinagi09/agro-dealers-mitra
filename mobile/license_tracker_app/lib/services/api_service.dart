@@ -100,6 +100,16 @@ class ApiService {
     return value != null ? int.tryParse(value) : null;
   }
 
+  /// Whether a previous login/register left a session on this device. Used
+  /// at app startup to decide between the home screen and the login screen -
+  /// access tokens are short-lived, so presence of a refresh token (not the
+  /// access token) is the right signal; an actually-expired refresh token is
+  /// still handled by the normal _authorizedRequest -> _forceLogout path.
+  Future<bool> isLoggedIn() async {
+    final refreshToken = await storage.read(key: 'refresh_token');
+    return refreshToken != null;
+  }
+
   Future<bool> _refreshAccessToken() async {
     final refreshToken = await storage.read(key: 'refresh_token');
     if (refreshToken == null) return false;

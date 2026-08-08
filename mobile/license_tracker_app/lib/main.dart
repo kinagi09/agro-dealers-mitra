@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'navigation.dart';
-import 'screens/login_screen.dart';
+import 'screens/auth_gate.dart';
 import 'theme/app_theme.dart';
 
 void main() {
@@ -16,7 +16,7 @@ class LicenseTrackerApp extends StatelessWidget {
       navigatorKey: navigatorKey,
       title: 'License Tracker',
       theme: AppTheme.theme,
-      home: const LoginScreen(),
+      home: const AuthGate(),
       debugShowCheckedModeBanner: false,
     );
   }
