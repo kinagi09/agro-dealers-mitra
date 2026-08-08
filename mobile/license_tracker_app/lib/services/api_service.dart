@@ -317,6 +317,15 @@ class ApiService {
     );
   }
 
+  Future<void> deleteLicence(int licenceId) async {
+    await _authorizedRequest(
+      (headers) => http.delete(
+        Uri.parse('$baseUrl/licences/$licenceId/'),
+        headers: headers,
+      ),
+    );
+  }
+
   Future<Map<String, dynamic>> createLicenceEntry({
     required int licence,
     String sourceType = '',

@@ -104,6 +104,41 @@ class _PesticideLicenceScreenState extends State<PesticideLicenceScreen> {
     }
   }
 
+  Future<void> _deleteLicence(
+    Map<String, dynamic> licence,
+    String typeName,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Licence'),
+        content: Text(
+          'This will permanently delete the $typeName licence and all its entries. Continue?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      await _apiService.deleteLicence(licence['id']);
+      _loadLicences();
+    } catch (e) {
+      setState(
+        () =>
+            _errorMessage = 'Could not delete this licence. Please try again.',
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -129,12 +164,28 @@ class _PesticideLicenceScreenState extends State<PesticideLicenceScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Text(
-                          type['name'],
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                type['name'],
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                            if (licence != null)
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.delete_outline,
+                                  color: Colors.red,
+                                ),
+                                tooltip: 'Delete Licence',
+                                onPressed: () =>
+                                    _deleteLicence(licence, type['name']),
+                              ),
+                          ],
                         ),
                         const SizedBox(height: 10),
                         if (licence == null)
