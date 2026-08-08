@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../utils/date_format.dart';
 
 class UpdateSeedLicenceScreen extends StatefulWidget {
   final int licenceTypeId;
@@ -73,10 +74,6 @@ class _UpdateSeedLicenceScreenState extends State<UpdateSeedLicenceScreen> {
     }
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-  }
-
   Future<void> _submit() async {
     if (_licenceNumberController.text.trim().isEmpty) {
       setState(
@@ -111,8 +108,8 @@ class _UpdateSeedLicenceScreenState extends State<UpdateSeedLicenceScreen> {
           licenceId: _existingLicenceId!,
           licenceType: widget.licenceTypeId,
           licenceNumber: _licenceNumberController.text.trim(),
-          issueDate: _formatDate(_issueDate!),
-          expiryDate: _formatDate(_expiryDate!),
+          issueDate: toApiDateString(_issueDate!),
+          expiryDate: toApiDateString(_expiryDate!),
         );
       } else {
         final dealerId = await _apiService.getDealerId();
@@ -127,8 +124,8 @@ class _UpdateSeedLicenceScreenState extends State<UpdateSeedLicenceScreen> {
           dealer: dealerId,
           licenceType: widget.licenceTypeId,
           licenceNumber: _licenceNumberController.text.trim(),
-          issueDate: _formatDate(_issueDate!),
-          expiryDate: _formatDate(_expiryDate!),
+          issueDate: toApiDateString(_issueDate!),
+          expiryDate: toApiDateString(_expiryDate!),
         );
       }
 
@@ -177,7 +174,7 @@ class _UpdateSeedLicenceScreenState extends State<UpdateSeedLicenceScreen> {
               title: Text(
                 _issueDate == null
                     ? 'Select Date of Issue of Licence'
-                    : 'Date of Issue of Licence: ${_formatDate(_issueDate!)}',
+                    : 'Date of Issue of Licence: ${toDisplayDateString(_issueDate!)}',
               ),
               trailing: const Icon(Icons.calendar_today),
               onTap: () => _pickLicenceDate(isIssueDate: true),
@@ -188,7 +185,7 @@ class _UpdateSeedLicenceScreenState extends State<UpdateSeedLicenceScreen> {
               title: Text(
                 _expiryDate == null
                     ? 'Select Date of Expiry of Licence'
-                    : 'Date of Expiry of Licence: ${_formatDate(_expiryDate!)}',
+                    : 'Date of Expiry of Licence: ${toDisplayDateString(_expiryDate!)}',
               ),
               trailing: const Icon(Icons.calendar_today),
               onTap: () => _pickLicenceDate(isIssueDate: false),

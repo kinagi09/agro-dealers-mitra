@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../utils/date_format.dart';
 
 class PesticideEntryDraft {
   int? existingId;
@@ -129,10 +130,6 @@ class _UpdatePesticideLicenceScreenState
     }
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-  }
-
   void _addRow() {
     final newEntry = PesticideEntryDraft();
     setState(() => _entries.add(newEntry));
@@ -250,8 +247,8 @@ class _UpdatePesticideLicenceScreenState
           licenceId: _existingLicenceId!,
           licenceType: widget.licenceTypeId,
           licenceNumber: _licenceNumberController.text.trim(),
-          issueDate: _formatDate(_issueDate!),
-          expiryDate: _formatDate(_expiryDate!),
+          issueDate: toApiDateString(_issueDate!),
+          expiryDate: toApiDateString(_expiryDate!),
         );
         licenceId = _existingLicenceId!;
       } else {
@@ -267,8 +264,8 @@ class _UpdatePesticideLicenceScreenState
           dealer: dealerId,
           licenceType: widget.licenceTypeId,
           licenceNumber: _licenceNumberController.text.trim(),
-          issueDate: _formatDate(_issueDate!),
-          expiryDate: _formatDate(_expiryDate!),
+          issueDate: toApiDateString(_issueDate!),
+          expiryDate: toApiDateString(_expiryDate!),
         );
         licenceId = licenceResponse['id'];
       }
@@ -278,13 +275,13 @@ class _UpdatePesticideLicenceScreenState
           await _apiService.updateLicenceEntry(
             entryId: entry.existingId!,
             companyName: entry.companyNameController.text.trim(),
-            validUpto: _formatDate(entry.validUpto!),
+            validUpto: toApiDateString(entry.validUpto!),
           );
         } else {
           await _apiService.createLicenceEntry(
             licence: licenceId,
             companyName: entry.companyNameController.text.trim(),
-            validUpto: _formatDate(entry.validUpto!),
+            validUpto: toApiDateString(entry.validUpto!),
           );
         }
       }
@@ -342,7 +339,7 @@ class _UpdatePesticideLicenceScreenState
                     title: Text(
                       _issueDate == null
                           ? 'Select Date of Issue of Licence'
-                          : 'Date of Issue of Licence: ${_formatDate(_issueDate!)}',
+                          : 'Date of Issue of Licence: ${toDisplayDateString(_issueDate!)}',
                     ),
                     trailing: const Icon(Icons.calendar_today),
                     onTap: () => _pickLicenceDate(isIssueDate: true),
@@ -353,7 +350,7 @@ class _UpdatePesticideLicenceScreenState
                     title: Text(
                       _expiryDate == null
                           ? 'Select Date of Expiry of Licence'
-                          : 'Date of Expiry of Licence: ${_formatDate(_expiryDate!)}',
+                          : 'Date of Expiry of Licence: ${toDisplayDateString(_expiryDate!)}',
                     ),
                     trailing: const Icon(Icons.calendar_today),
                     onTap: () => _pickLicenceDate(isIssueDate: false),
@@ -415,7 +412,7 @@ class _UpdatePesticideLicenceScreenState
                                 title: Text(
                                   entry.validUpto == null
                                       ? 'Select PC Validity Date'
-                                      : 'PC Validity Date: ${_formatDate(entry.validUpto!)}',
+                                      : 'PC Validity Date: ${toDisplayDateString(entry.validUpto!)}',
                                 ),
                                 trailing: const Icon(Icons.calendar_today),
                                 onTap: () => _pickValidUpto(entry),

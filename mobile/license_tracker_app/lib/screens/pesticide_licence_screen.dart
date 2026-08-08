@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../utils/date_format.dart';
 import 'update_pesticide_licence_screen.dart';
 
 class PesticideLicenceScreen extends StatefulWidget {
@@ -195,8 +196,14 @@ class _PesticideLicenceScreenState extends State<PesticideLicenceScreen> {
                           )
                         else ...[
                           _infoRow('Licence No', licence['licence_number']),
-                          _infoRow('Date of Issue', licence['issue_date']),
-                          _infoRow('Date of Expiry', licence['expiry_date']),
+                          _infoRow(
+                            'Date of Issue',
+                            isoToDisplayDateString(licence['issue_date']),
+                          ),
+                          _infoRow(
+                            'Date of Expiry',
+                            isoToDisplayDateString(licence['expiry_date']),
+                          ),
                           const SizedBox(height: 4),
                           const Text(
                             'Company Entries',
@@ -219,7 +226,7 @@ class _PesticideLicenceScreenState extends State<PesticideLicenceScreen> {
                                   children: [
                                     Text(e['company_name']),
                                     Text(
-                                      'PC Validity Date: ${e['valid_upto']}',
+                                      'PC Validity Date: ${isoToDisplayDateString(e['valid_upto'])}',
                                       style: const TextStyle(
                                         color: Colors.black54,
                                         fontSize: 13,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
+import '../utils/date_format.dart';
 
 class SourceEntryDraft {
   int? existingId;
@@ -196,10 +197,6 @@ class _UpdateFertilizerLicenceScreenState
     }
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-  }
-
   void _addSourceRow() {
     final newEntry = SourceEntryDraft();
     setState(() => _sourceEntries.add(newEntry));
@@ -327,8 +324,8 @@ class _UpdateFertilizerLicenceScreenState
           licenceId: _existingLicenceId!,
           licenceType: widget.licenceTypeId,
           licenceNumber: _licenceNumberController.text.trim(),
-          issueDate: _formatDate(_issueDate!),
-          expiryDate: _formatDate(_expiryDate!),
+          issueDate: toApiDateString(_issueDate!),
+          expiryDate: toApiDateString(_expiryDate!),
         );
         licenceId = _existingLicenceId!;
       } else {
@@ -344,8 +341,8 @@ class _UpdateFertilizerLicenceScreenState
           dealer: dealerId,
           licenceType: widget.licenceTypeId,
           licenceNumber: _licenceNumberController.text.trim(),
-          issueDate: _formatDate(_issueDate!),
-          expiryDate: _formatDate(_expiryDate!),
+          issueDate: toApiDateString(_issueDate!),
+          expiryDate: toApiDateString(_expiryDate!),
         );
         licenceId = licenceResponse['id'];
       }
@@ -357,7 +354,7 @@ class _UpdateFertilizerLicenceScreenState
             sourceType: entry.sourceTypeController.text.trim(),
             companyName: entry.companyNameController.text.trim(),
             fertilizerType: entry.fertilizerTypeIds,
-            validUpto: _formatDate(entry.validUpto!),
+            validUpto: toApiDateString(entry.validUpto!),
           );
         } else {
           await _apiService.createLicenceEntry(
@@ -365,7 +362,7 @@ class _UpdateFertilizerLicenceScreenState
             sourceType: entry.sourceTypeController.text.trim(),
             companyName: entry.companyNameController.text.trim(),
             fertilizerType: entry.fertilizerTypeIds,
-            validUpto: _formatDate(entry.validUpto!),
+            validUpto: toApiDateString(entry.validUpto!),
           );
         }
       }
@@ -419,7 +416,7 @@ class _UpdateFertilizerLicenceScreenState
                     title: Text(
                       _issueDate == null
                           ? 'Select Date of Issue of Licence'
-                          : 'Date of Issue of Licence: ${_formatDate(_issueDate!)}',
+                          : 'Date of Issue of Licence: ${toDisplayDateString(_issueDate!)}',
                     ),
                     trailing: const Icon(Icons.calendar_today),
                     onTap: () => _pickLicenceDate(isIssueDate: true),
@@ -430,7 +427,7 @@ class _UpdateFertilizerLicenceScreenState
                     title: Text(
                       _expiryDate == null
                           ? 'Select Date of Expiry of Licence'
-                          : 'Date of Expiry of Licence: ${_formatDate(_expiryDate!)}',
+                          : 'Date of Expiry of Licence: ${toDisplayDateString(_expiryDate!)}',
                     ),
                     trailing: const Icon(Icons.calendar_today),
                     onTap: () => _pickLicenceDate(isIssueDate: false),
@@ -523,7 +520,7 @@ class _UpdateFertilizerLicenceScreenState
                                 title: Text(
                                   entry.validUpto == null
                                       ? 'Select Valid Upto'
-                                      : 'Valid Upto: ${_formatDate(entry.validUpto!)}',
+                                      : 'Valid Upto: ${toDisplayDateString(entry.validUpto!)}',
                                 ),
                                 trailing: const Icon(Icons.calendar_today),
                                 onTap: () => _pickValidUpto(entry),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../utils/date_format.dart';
 import 'update_seed_licence_screen.dart';
 
 class SeedLicenceScreen extends StatefulWidget {
@@ -189,8 +190,14 @@ class _SeedLicenceScreenState extends State<SeedLicenceScreen> {
                           )
                         else ...[
                           _infoRow('Licence No', licence['licence_number']),
-                          _infoRow('Date of Issue', licence['issue_date']),
-                          _infoRow('Date of Expiry', licence['expiry_date']),
+                          _infoRow(
+                            'Date of Issue',
+                            isoToDisplayDateString(licence['issue_date']),
+                          ),
+                          _infoRow(
+                            'Date of Expiry',
+                            isoToDisplayDateString(licence['expiry_date']),
+                          ),
                         ],
                         const SizedBox(height: 4),
                         ElevatedButton(
