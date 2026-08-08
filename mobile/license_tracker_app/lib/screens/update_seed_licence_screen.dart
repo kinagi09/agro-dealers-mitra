@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../utils/date_format.dart';
+import '../widgets/unsaved_changes_guard.dart';
 
 class UpdateSeedLicenceScreen extends StatefulWidget {
   final int licenceTypeId;
@@ -28,6 +29,10 @@ class _UpdateSeedLicenceScreenState extends State<UpdateSeedLicenceScreen> {
   DateTime? _expiryDate;
   int? _existingLicenceId;
 
+  late final String _initialLicenceNumber;
+  late final DateTime? _initialIssueDate;
+  late final DateTime? _initialExpiryDate;
+
   bool _isLoading = false;
   String? _errorMessage;
 
@@ -41,6 +46,15 @@ class _UpdateSeedLicenceScreenState extends State<UpdateSeedLicenceScreen> {
       _issueDate = DateTime.parse(existing['issue_date']);
       _expiryDate = DateTime.parse(existing['expiry_date']);
     }
+    _initialLicenceNumber = _licenceNumberController.text.trim();
+    _initialIssueDate = _issueDate;
+    _initialExpiryDate = _expiryDate;
+  }
+
+  bool _hasUnsavedChanges() {
+    return _licenceNumberController.text.trim() != _initialLicenceNumber ||
+        _issueDate != _initialIssueDate ||
+        _expiryDate != _initialExpiryDate;
   }
 
   Future<void> _pickLicenceDate({required bool isIssueDate}) async {
@@ -144,68 +158,71 @@ class _UpdateSeedLicenceScreenState extends State<UpdateSeedLicenceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Update Seed Licence')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.grass, color: Colors.brown, size: 20),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Licence Type: ${widget.licenceTypeName}',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+    return UnsavedChangesGuard(
+      hasUnsavedChanges: _hasUnsavedChanges,
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Update Seed Licence')),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.grass, color: Colors.brown, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Licence Type: ${widget.licenceTypeName}',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _licenceNumberController,
-              decoration: const InputDecoration(hintText: 'Licence Number'),
-            ),
-            const SizedBox(height: 12),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                _issueDate == null
-                    ? 'Select Date of Issue of Licence'
-                    : 'Date of Issue of Licence: ${toDisplayDateString(_issueDate!)}',
+                ],
               ),
-              trailing: const Icon(Icons.calendar_today),
-              onTap: () => _pickLicenceDate(isIssueDate: true),
-            ),
-            const Divider(height: 1),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                _expiryDate == null
-                    ? 'Select Date of Expiry of Licence'
-                    : 'Date of Expiry of Licence: ${toDisplayDateString(_expiryDate!)}',
-              ),
-              trailing: const Icon(Icons.calendar_today),
-              onTap: () => _pickLicenceDate(isIssueDate: false),
-            ),
-            const SizedBox(height: 24),
-            if (_errorMessage != null) ...[
               const SizedBox(height: 16),
-              Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
+              TextField(
+                controller: _licenceNumberController,
+                decoration: const InputDecoration(hintText: 'Licence Number'),
+              ),
+              const SizedBox(height: 12),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(
+                  _issueDate == null
+                      ? 'Select Date of Issue of Licence'
+                      : 'Date of Issue of Licence: ${toDisplayDateString(_issueDate!)}',
+                ),
+                trailing: const Icon(Icons.calendar_today),
+                onTap: () => _pickLicenceDate(isIssueDate: true),
+              ),
+              const Divider(height: 1),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(
+                  _expiryDate == null
+                      ? 'Select Date of Expiry of Licence'
+                      : 'Date of Expiry of Licence: ${toDisplayDateString(_expiryDate!)}',
+                ),
+                trailing: const Icon(Icons.calendar_today),
+                onTap: () => _pickLicenceDate(isIssueDate: false),
+              ),
+              const SizedBox(height: 24),
+              if (_errorMessage != null) ...[
+                const SizedBox(height: 16),
+                Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
+              ],
+              ElevatedButton(
+                onPressed: _isLoading ? null : _submit,
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Update Licence'),
+              ),
             ],
-            ElevatedButton(
-              onPressed: _isLoading ? null : _submit,
-              child: _isLoading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Text('Update Licence'),
-            ),
-          ],
+          ),
         ),
       ),
     );

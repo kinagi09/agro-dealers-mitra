@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/date_format.dart';
+import '../widgets/unsaved_changes_guard.dart';
 
 class SourceEntryDraft {
   int? existingId;
@@ -10,6 +12,20 @@ class SourceEntryDraft {
   final FocusNode sourceTypeFocusNode = FocusNode();
   List<int> fertilizerTypeIds = [];
   DateTime? validUpto;
+}
+
+class _EntrySnapshot {
+  final String sourceType;
+  final String companyName;
+  final List<int> fertilizerTypeIds;
+  final DateTime? validUpto;
+
+  _EntrySnapshot(
+    this.sourceType,
+    this.companyName,
+    this.fertilizerTypeIds,
+    this.validUpto,
+  );
 }
 
 class UpdateFertilizerLicenceScreen extends StatefulWidget {
@@ -42,6 +58,11 @@ class _UpdateFertilizerLicenceScreenState
   int? _existingLicenceId;
 
   final List<SourceEntryDraft> _sourceEntries = [SourceEntryDraft()];
+
+  String _initialLicenceNumber = '';
+  DateTime? _initialIssueDate;
+  DateTime? _initialExpiryDate;
+  List<_EntrySnapshot> _initialEntries = [];
 
   bool _isLoadingDropdowns = true;
   bool _isLoading = false;
@@ -85,6 +106,11 @@ class _UpdateFertilizerLicenceScreenState
         }
       }
 
+      _initialLicenceNumber = _licenceNumberController.text.trim();
+      _initialIssueDate = _issueDate;
+      _initialExpiryDate = _expiryDate;
+      _initialEntries = _sourceEntries.map(_snapshotOf).toList();
+
       setState(() {
         _fertilizerTypeOptions = fertilizerTypeOptions;
         _isLoadingDropdowns = false;
@@ -96,6 +122,36 @@ class _UpdateFertilizerLicenceScreenState
         _isLoadingDropdowns = false;
       });
     }
+  }
+
+  _EntrySnapshot _snapshotOf(SourceEntryDraft entry) {
+    return _EntrySnapshot(
+      entry.sourceTypeController.text.trim(),
+      entry.companyNameController.text.trim(),
+      List<int>.from(entry.fertilizerTypeIds)..sort(),
+      entry.validUpto,
+    );
+  }
+
+  bool _entryChanged(SourceEntryDraft current, _EntrySnapshot original) {
+    final snapshot = _snapshotOf(current);
+    return snapshot.sourceType != original.sourceType ||
+        snapshot.companyName != original.companyName ||
+        snapshot.validUpto != original.validUpto ||
+        !listEquals(snapshot.fertilizerTypeIds, original.fertilizerTypeIds);
+  }
+
+  bool _hasUnsavedChanges() {
+    if (_licenceNumberController.text.trim() != _initialLicenceNumber) {
+      return true;
+    }
+    if (_issueDate != _initialIssueDate) return true;
+    if (_expiryDate != _initialExpiryDate) return true;
+    if (_sourceEntries.length != _initialEntries.length) return true;
+    for (var i = 0; i < _sourceEntries.length; i++) {
+      if (_entryChanged(_sourceEntries[i], _initialEntries[i])) return true;
+    }
+    return false;
   }
 
   Future<void> _pickLicenceDate({required bool isIssueDate}) async {
@@ -382,181 +438,192 @@ class _UpdateFertilizerLicenceScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Update Fertilizer Licence')),
-      body: _isLoadingDropdowns
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.eco, color: AppColors.green, size: 20),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Licence Type: ${widget.licenceTypeName}',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+    return UnsavedChangesGuard(
+      hasUnsavedChanges: _hasUnsavedChanges,
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Update Fertilizer Licence')),
+        body: _isLoadingDropdowns
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.eco, color: AppColors.green, size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Licence Type: ${widget.licenceTypeName}',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
                         ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _licenceNumberController,
+                      decoration: const InputDecoration(
+                        hintText: 'Licence Number',
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _licenceNumberController,
-                    decoration: const InputDecoration(
-                      hintText: 'Licence Number',
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      _issueDate == null
-                          ? 'Select Date of Issue of Licence'
-                          : 'Date of Issue of Licence: ${toDisplayDateString(_issueDate!)}',
-                    ),
-                    trailing: const Icon(Icons.calendar_today),
-                    onTap: () => _pickLicenceDate(isIssueDate: true),
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      _expiryDate == null
-                          ? 'Select Date of Expiry of Licence'
-                          : 'Date of Expiry of Licence: ${toDisplayDateString(_expiryDate!)}',
-                    ),
-                    trailing: const Icon(Icons.calendar_today),
-                    onTap: () => _pickLicenceDate(isIssueDate: false),
-                  ),
-                  const SizedBox(height: 24),
-                  const Text(
-                    'Source / Company Entries',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  const SizedBox(height: 8),
-                  ..._sourceEntries.asMap().entries.map((mapEntry) {
-                    final index = mapEntry.key;
-                    final entry = mapEntry.value;
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  'Entry ${index + 1}',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const Spacer(),
-                                if (_sourceEntries.length > 1)
-                                  IconButton(
-                                    icon: const Icon(
-                                      Icons.delete_outline,
-                                      color: Colors.red,
-                                    ),
-                                    onPressed: () => _removeSourceRow(index),
-                                  ),
-                              ],
-                            ),
-                            TextField(
-                              controller: entry.sourceTypeController,
-                              focusNode: entry.sourceTypeFocusNode,
-                              decoration: const InputDecoration(
-                                hintText: 'Source Type',
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            TextField(
-                              controller: entry.companyNameController,
-                              decoration: InputDecoration(
-                                labelText: 'Source Company Name',
-                                border: _fieldBorder(index, 'companyName'),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            InkWell(
-                              onTap: () => _pickFertilizerTypes(entry),
-                              child: InputDecorator(
-                                isEmpty: entry.fertilizerTypeIds.isEmpty,
-                                decoration: InputDecoration(
-                                  labelText: 'Type(s) of Fertilizer',
-                                  border: _fieldBorder(index, 'fertilizerType'),
-                                ),
-                                child: Wrap(
-                                  spacing: 6,
-                                  runSpacing: 4,
-                                  children: entry.fertilizerTypeIds.isEmpty
-                                      ? const []
-                                      : entry.fertilizerTypeIds.map((id) {
-                                          final match = _fertilizerTypeOptions
-                                              .firstWhere((f) => f['id'] == id);
-                                          return Chip(
-                                            label: Text(match['name']),
-                                          );
-                                        }).toList(),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Container(
-                              decoration: BoxDecoration(
-                                border:
-                                    (_errorRowIndex == index &&
-                                        _errorFieldName == 'validUpto')
-                                    ? Border.all(color: Colors.red, width: 2)
-                                    : null,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                title: Text(
-                                  entry.validUpto == null
-                                      ? 'Select Valid Upto'
-                                      : 'Valid Upto: ${toDisplayDateString(entry.validUpto!)}',
-                                ),
-                                trailing: const Icon(Icons.calendar_today),
-                                onTap: () => _pickValidUpto(entry),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }),
-                  OutlinedButton.icon(
-                    onPressed: _addSourceRow,
-                    icon: const Icon(Icons.add),
-                    label: const Text('Add Another Source Entry'),
-                  ),
-                  const SizedBox(height: 24),
-                  if (_errorMessage != null) ...[
-                    Text(
-                      _errorMessage!,
-                      style: const TextStyle(color: Colors.red),
                     ),
                     const SizedBox(height: 12),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        _issueDate == null
+                            ? 'Select Date of Issue of Licence'
+                            : 'Date of Issue of Licence: ${toDisplayDateString(_issueDate!)}',
+                      ),
+                      trailing: const Icon(Icons.calendar_today),
+                      onTap: () => _pickLicenceDate(isIssueDate: true),
+                    ),
+                    const Divider(height: 1),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        _expiryDate == null
+                            ? 'Select Date of Expiry of Licence'
+                            : 'Date of Expiry of Licence: ${toDisplayDateString(_expiryDate!)}',
+                      ),
+                      trailing: const Icon(Icons.calendar_today),
+                      onTap: () => _pickLicenceDate(isIssueDate: false),
+                    ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Source / Company Entries',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ..._sourceEntries.asMap().entries.map((mapEntry) {
+                      final index = mapEntry.key;
+                      final entry = mapEntry.value;
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    'Entry ${index + 1}',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  if (_sourceEntries.length > 1)
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.delete_outline,
+                                        color: Colors.red,
+                                      ),
+                                      onPressed: () => _removeSourceRow(index),
+                                    ),
+                                ],
+                              ),
+                              TextField(
+                                controller: entry.sourceTypeController,
+                                focusNode: entry.sourceTypeFocusNode,
+                                decoration: const InputDecoration(
+                                  hintText: 'Source Type',
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              TextField(
+                                controller: entry.companyNameController,
+                                decoration: InputDecoration(
+                                  labelText: 'Source Company Name',
+                                  border: _fieldBorder(index, 'companyName'),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              InkWell(
+                                onTap: () => _pickFertilizerTypes(entry),
+                                child: InputDecorator(
+                                  isEmpty: entry.fertilizerTypeIds.isEmpty,
+                                  decoration: InputDecoration(
+                                    labelText: 'Type(s) of Fertilizer',
+                                    border: _fieldBorder(
+                                      index,
+                                      'fertilizerType',
+                                    ),
+                                  ),
+                                  child: Wrap(
+                                    spacing: 6,
+                                    runSpacing: 4,
+                                    children: entry.fertilizerTypeIds.isEmpty
+                                        ? const []
+                                        : entry.fertilizerTypeIds.map((id) {
+                                            final match = _fertilizerTypeOptions
+                                                .firstWhere(
+                                                  (f) => f['id'] == id,
+                                                );
+                                            return Chip(
+                                              label: Text(match['name']),
+                                            );
+                                          }).toList(),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Container(
+                                decoration: BoxDecoration(
+                                  border:
+                                      (_errorRowIndex == index &&
+                                          _errorFieldName == 'validUpto')
+                                      ? Border.all(color: Colors.red, width: 2)
+                                      : null,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  title: Text(
+                                    entry.validUpto == null
+                                        ? 'Select Valid Upto'
+                                        : 'Valid Upto: ${toDisplayDateString(entry.validUpto!)}',
+                                  ),
+                                  trailing: const Icon(Icons.calendar_today),
+                                  onTap: () => _pickValidUpto(entry),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+                    OutlinedButton.icon(
+                      onPressed: _addSourceRow,
+                      icon: const Icon(Icons.add),
+                      label: const Text('Add Another Source Entry'),
+                    ),
+                    const SizedBox(height: 24),
+                    if (_errorMessage != null) ...[
+                      Text(
+                        _errorMessage!,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                    ElevatedButton(
+                      onPressed: _isLoading ? null : _submit,
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('Save Fertilizer Licence'),
+                    ),
                   ],
-                  ElevatedButton(
-                    onPressed: _isLoading ? null : _submit,
-                    child: _isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Save Fertilizer Licence'),
-                  ),
-                ],
+                ),
               ),
-            ),
+      ),
     );
   }
 }
