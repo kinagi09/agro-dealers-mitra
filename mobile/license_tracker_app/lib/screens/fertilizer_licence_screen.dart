@@ -108,6 +108,15 @@ class _FertilizerLicenceScreenState extends State<FertilizerLicenceScreen> {
     );
   }
 
+  // 'Source Type (Company Name)', e.g. 'Retailer (ABC Traders)'. Falls back
+  // to just the company name when no source type was recorded.
+  String _entryLabel(Map<String, dynamic> entry) {
+    final sourceType = entry['source_type'];
+    final companyName = entry['company_name'];
+    if (sourceType == null || sourceType == '') return companyName;
+    return '$sourceType ($companyName)';
+  }
+
   Future<void> _openUpdateScreen(Map<String, dynamic> type) async {
     final result = await Navigator.push(
       context,
@@ -237,9 +246,7 @@ class _FertilizerLicenceScreenState extends State<FertilizerLicenceScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      '${e['company_name']}${e['source_type'] != null && e['source_type'] != '' ? ' (${e['source_type']})' : ''}',
-                                    ),
+                                    Text(_entryLabel(e)),
                                     Text(
                                       'Valid Upto: ${e['valid_upto']}',
                                       style: const TextStyle(
