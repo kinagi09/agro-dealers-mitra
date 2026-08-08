@@ -134,6 +134,12 @@ class Licence(models.Model):
             models.Index(fields=["dealer"]),
             models.Index(fields=["licence_type"]),
         ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["dealer", "licence_type"],
+                name="unique_licence_per_dealer_and_type",
+            ),
+        ]
 
     def clean(self):
         if self.expiry_date and self.issue_date and self.expiry_date <= self.issue_date:
