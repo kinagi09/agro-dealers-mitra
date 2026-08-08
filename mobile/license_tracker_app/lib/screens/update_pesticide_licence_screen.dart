@@ -401,7 +401,7 @@ class _UpdatePesticideLicenceScreenState
                                 controller: entry.companyNameController,
                                 focusNode: entry.companyNameFocusNode,
                                 decoration: InputDecoration(
-                                  labelText: 'Name of Company (Manufacturer)',
+                                  labelText: 'Name of Company',
                                   border: _fieldBorder(index, 'companyName'),
                                 ),
                               ),
