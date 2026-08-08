@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/api_service.dart';
+import '../widgets/otp_input.dart';
 import '../widgets/unsaved_changes_guard.dart';
 import 'home_screen.dart';
 
@@ -261,16 +262,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
 
               if (_otpSent && !_otpVerified) ...[
-                TextField(
+                OtpInput(
                   controller: _otpController,
                   focusNode: _otpFocusNode,
-                  keyboardType: TextInputType.number,
-                  maxLength: 6,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  decoration: const InputDecoration(
-                    hintText: 'Enter OTP',
-                    counterText: '',
-                  ),
+                  onCompleted: (_) => _verifyOtp(),
                 ),
                 const SizedBox(height: 12),
                 ElevatedButton(

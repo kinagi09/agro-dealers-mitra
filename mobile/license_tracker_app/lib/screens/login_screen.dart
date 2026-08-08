@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../widgets/app_logo.dart';
+import '../widgets/otp_input.dart';
 import 'register_screen.dart';
 import 'home_screen.dart';
 import 'package:flutter/services.dart';
@@ -135,16 +136,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 8),
-                TextField(
+                OtpInput(
                   controller: _otpController,
                   focusNode: _otpFocusNode,
-                  keyboardType: TextInputType.number,
-                  maxLength: 6,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  decoration: const InputDecoration(
-                    hintText: 'Enter OTP',
-                    counterText: '',
-                  ),
+                  onCompleted: (_) => _verifyAndLogin(),
                 ),
                 const SizedBox(height: 16),
               ],
