@@ -72,9 +72,9 @@ class NotificationPreferenceAdmin(admin.ModelAdmin):
 
 @admin.register(ReminderSchedule)
 class ReminderScheduleAdmin(admin.ModelAdmin):
-    list_display = ("licence", "days_before_expiry", "scheduled_date", "is_sent")
+    list_display = ("licence", "entry", "days_before_expiry", "scheduled_date", "is_sent")
     list_filter = ("is_sent", "days_before_expiry")
-    autocomplete_fields = ("licence",)
+    autocomplete_fields = ("licence", "entry")
     date_hierarchy = "scheduled_date"
 
 

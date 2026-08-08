@@ -119,7 +119,10 @@ class Licence(models.Model):
 
     licence_number = models.CharField(max_length=100, unique=True)
     issue_date = models.DateField()
-    expiry_date = models.DateField()
+    # Nullable: Pesticide licences don't collect a top-level expiry date -
+    # their reminders are driven by each LicenceEntry.valid_upto instead
+    # (see ReminderSchedule.entry / signals.py).
+    expiry_date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="ACTIVE")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -177,6 +180,17 @@ class ReminderSchedule(models.Model):
         on_delete=models.CASCADE,
         related_name="reminders"
     )
+    # Set when this reminder is for one LicenceEntry's valid_upto (currently
+    # Pesticide) rather than the parent Licence's own expiry_date. `licence`
+    # above is always populated (denormalized to entry.licence when this is
+    # set) so "all reminders for a licence" queries don't need to branch.
+    entry = models.ForeignKey(
+        "LicenceEntry",
+        on_delete=models.CASCADE,
+        related_name="reminders",
+        null=True,
+        blank=True,
+    )
     days_before_expiry = models.PositiveIntegerField()
     scheduled_date = models.DateField()
     is_sent = models.BooleanField(default=False)
@@ -189,7 +203,8 @@ class ReminderSchedule(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.licence.licence_number} ({self.days_before_expiry} days)"
+        subject = self.entry.company_name if self.entry else self.licence.licence_number
+        return f"{subject} ({self.days_before_expiry} days)"
 
 
 class NotificationLog(models.Model):
