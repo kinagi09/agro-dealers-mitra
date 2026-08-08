@@ -221,7 +221,7 @@ class _UpdatePesticideLicenceScreenState
       if (entry.companyNameController.text.trim().isEmpty) {
         setState(() {
           _errorMessage =
-              'Row ${i + 1}: Name of Company is not filled, please do fill it.';
+              'Serial No ${i + 1}: Name of Company is not filled, please do fill it.';
           _errorRowIndex = i;
           _errorFieldName = 'companyName';
         });
@@ -230,7 +230,7 @@ class _UpdatePesticideLicenceScreenState
       if (entry.validUpto == null) {
         setState(() {
           _errorMessage =
-              'Row ${i + 1}: PC Validity Date is not filled, please do fill it.';
+              'Serial No ${i + 1}: PC Validity Date is not filled, please do fill it.';
           _errorRowIndex = i;
           _errorFieldName = 'validUpto';
         });
@@ -376,7 +376,7 @@ class _UpdatePesticideLicenceScreenState
                             Row(
                               children: [
                                 Text(
-                                  'Row ${index + 1}',
+                                  'Serial No ${index + 1}',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                   ),

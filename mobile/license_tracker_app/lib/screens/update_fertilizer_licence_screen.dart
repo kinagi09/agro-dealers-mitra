@@ -289,7 +289,7 @@ class _UpdateFertilizerLicenceScreenState
       if (entry.companyNameController.text.trim().isEmpty) {
         setState(() {
           _errorMessage =
-              'Row ${i + 1}: Source Company Name is not filled, please do fill it.';
+              'Serial No ${i + 1}: Source Company Name is not filled, please do fill it.';
           _errorRowIndex = i;
           _errorFieldName = 'companyName';
         });
@@ -298,7 +298,7 @@ class _UpdateFertilizerLicenceScreenState
       if (entry.fertilizerTypeIds.isEmpty) {
         setState(() {
           _errorMessage =
-              'Row ${i + 1}: At least one Type of Fertilizer must be selected.';
+              'Serial No ${i + 1}: At least one Type of Fertilizer must be selected.';
           _errorRowIndex = i;
           _errorFieldName = 'fertilizerType';
         });
@@ -307,7 +307,7 @@ class _UpdateFertilizerLicenceScreenState
       if (entry.validUpto == null) {
         setState(() {
           _errorMessage =
-              'Row ${i + 1}: Valid Upto date is not filled, please do fill it.';
+              'Serial No ${i + 1}: Valid Upto date is not filled, please do fill it.';
           _errorRowIndex = i;
           _errorFieldName = 'validUpto';
         });
@@ -453,7 +453,7 @@ class _UpdateFertilizerLicenceScreenState
                             Row(
                               children: [
                                 Text(
-                                  'Row ${index + 1}',
+                                  'Serial No ${index + 1}',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                   ),
