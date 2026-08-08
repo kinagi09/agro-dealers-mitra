@@ -289,7 +289,7 @@ class _UpdateFertilizerLicenceScreenState
       if (entry.companyNameController.text.trim().isEmpty) {
         setState(() {
           _errorMessage =
-              'Serial No ${i + 1}: Source Company Name is not filled, please do fill it.';
+              'Entry ${i + 1}: Source Company Name is not filled, please do fill it.';
           _errorRowIndex = i;
           _errorFieldName = 'companyName';
         });
@@ -298,7 +298,7 @@ class _UpdateFertilizerLicenceScreenState
       if (entry.fertilizerTypeIds.isEmpty) {
         setState(() {
           _errorMessage =
-              'Serial No ${i + 1}: At least one Type of Fertilizer must be selected.';
+              'Entry ${i + 1}: At least one Type of Fertilizer must be selected.';
           _errorRowIndex = i;
           _errorFieldName = 'fertilizerType';
         });
@@ -307,7 +307,7 @@ class _UpdateFertilizerLicenceScreenState
       if (entry.validUpto == null) {
         setState(() {
           _errorMessage =
-              'Serial No ${i + 1}: Valid Upto date is not filled, please do fill it.';
+              'Entry ${i + 1}: Valid Upto date is not filled, please do fill it.';
           _errorRowIndex = i;
           _errorFieldName = 'validUpto';
         });
@@ -453,7 +453,7 @@ class _UpdateFertilizerLicenceScreenState
                             Row(
                               children: [
                                 Text(
-                                  'Serial No ${index + 1}',
+                                  'Entry ${index + 1}',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -488,6 +488,7 @@ class _UpdateFertilizerLicenceScreenState
                             InkWell(
                               onTap: () => _pickFertilizerTypes(entry),
                               child: InputDecorator(
+                                isEmpty: entry.fertilizerTypeIds.isEmpty,
                                 decoration: InputDecoration(
                                   labelText: 'Type(s) of Fertilizer',
                                   border: _fieldBorder(index, 'fertilizerType'),
@@ -496,14 +497,7 @@ class _UpdateFertilizerLicenceScreenState
                                   spacing: 6,
                                   runSpacing: 4,
                                   children: entry.fertilizerTypeIds.isEmpty
-                                      ? [
-                                          const Text(
-                                            'Tap to select',
-                                            style: TextStyle(
-                                              color: Colors.grey,
-                                            ),
-                                          ),
-                                        ]
+                                      ? const []
                                       : entry.fertilizerTypeIds.map((id) {
                                           final match = _fertilizerTypeOptions
                                               .firstWhere((f) => f['id'] == id);
@@ -543,7 +537,7 @@ class _UpdateFertilizerLicenceScreenState
                   OutlinedButton.icon(
                     onPressed: _addSourceRow,
                     icon: const Icon(Icons.add),
-                    label: const Text('Add Another Source'),
+                    label: const Text('Add Another Source Entry'),
                   ),
                   const SizedBox(height: 24),
                   if (_errorMessage != null) ...[
