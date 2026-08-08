@@ -136,10 +136,13 @@ REST_FRAMEWORK = {
     ),
 }
 
-# A dealer logging in on their phone shouldn't be forced to re-login every
-# day; the access token still auto-refreshes silently and only expires the
-# session once the refresh token itself lapses.
+# A dealer's session should last until they explicitly log out, not expire
+# on its own. The access token still auto-refreshes silently and short-lived
+# (so a stolen access token alone is only useful briefly); the refresh token
+# is set to an effectively unlimited lifetime (~100 years) instead of a true
+# infinity, which simplejwt/JWT don't support - logout is the only thing
+# that ends a session (ApiService.logout() clears it from device storage).
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=36500),
 }
