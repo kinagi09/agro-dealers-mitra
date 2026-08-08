@@ -16,10 +16,17 @@ class _LoginScreenState extends State<LoginScreen> {
   final ApiService _apiService = ApiService();
   final TextEditingController _whatsappController = TextEditingController();
   final TextEditingController _otpController = TextEditingController();
+  final FocusNode _otpFocusNode = FocusNode();
 
   bool _otpSent = false;
   bool _isLoading = false;
   String? _errorMessage;
+
+  @override
+  void dispose() {
+    _otpFocusNode.dispose();
+    super.dispose();
+  }
 
   Future<void> _sendOtp() async {
     final number = _whatsappController.text.trim();
@@ -45,6 +52,9 @@ class _LoginScreenState extends State<LoginScreen> {
         purpose: 'login',
       );
       setState(() => _otpSent = true);
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _otpFocusNode.requestFocus(),
+      );
     } catch (e) {
       setState(
         () => _errorMessage = e is ApiException
@@ -127,6 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 8),
                 TextField(
                   controller: _otpController,
+                  focusNode: _otpFocusNode,
                   keyboardType: TextInputType.number,
                   maxLength: 6,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],

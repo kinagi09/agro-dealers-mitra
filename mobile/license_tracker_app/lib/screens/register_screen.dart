@@ -18,11 +18,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _shopNameController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
+  final FocusNode _otpFocusNode = FocusNode();
+  final FocusNode _nameFocusNode = FocusNode();
 
   bool _otpSent = false;
   bool _otpVerified = false;
   bool _isLoading = false;
   String? _errorMessage;
+
+  @override
+  void dispose() {
+    _otpFocusNode.dispose();
+    _nameFocusNode.dispose();
+    super.dispose();
+  }
 
   List<dynamic> _states = [];
   List<dynamic> _districts = [];
@@ -96,6 +105,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     try {
       await _apiService.sendOtp(number, purpose: 'register');
       setState(() => _otpSent = true);
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _otpFocusNode.requestFocus(),
+      );
     } catch (e) {
       setState(
         () => _errorMessage = e is ApiException
@@ -118,6 +130,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _otpController.text.trim(),
       );
       setState(() => _otpVerified = true);
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _nameFocusNode.requestFocus(),
+      );
     } catch (e) {
       setState(() => _errorMessage = 'Invalid or expired OTP. Try again.');
     } finally {
@@ -234,6 +249,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             if (_otpSent && !_otpVerified) ...[
               TextField(
                 controller: _otpController,
+                focusNode: _otpFocusNode,
                 keyboardType: TextInputType.number,
                 maxLength: 6,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -261,6 +277,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 12),
               TextField(
                 controller: _nameController,
+                focusNode: _nameFocusNode,
                 decoration: const InputDecoration(hintText: 'Person Full Name'),
               ),
               const SizedBox(height: 12),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'navigation.dart';
 import 'screens/auth_gate.dart';
 import 'theme/app_theme.dart';
+import 'widgets/keyboard_dismiss_unfocus.dart';
 
 void main() {
   runApp(const LicenseTrackerApp());
@@ -18,6 +19,8 @@ class LicenseTrackerApp extends StatelessWidget {
       theme: AppTheme.theme,
       home: const AuthGate(),
       debugShowCheckedModeBanner: false,
+      builder: (context, child) =>
+          KeyboardDismissUnfocus(child: child ?? const SizedBox.shrink()),
     );
   }
 }

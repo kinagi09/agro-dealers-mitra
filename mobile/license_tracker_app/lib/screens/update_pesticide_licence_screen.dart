@@ -4,6 +4,7 @@ import '../services/api_service.dart';
 class PesticideEntryDraft {
   int? existingId;
   final TextEditingController companyNameController = TextEditingController();
+  final FocusNode companyNameFocusNode = FocusNode();
   DateTime? validUpto;
 }
 
@@ -83,6 +84,7 @@ class _UpdatePesticideLicenceScreenState
   }
 
   Future<void> _pickLicenceDate({required bool isIssueDate}) async {
+    FocusScope.of(context).unfocus();
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final picked = await showDatePicker(
@@ -97,6 +99,7 @@ class _UpdatePesticideLicenceScreenState
                 today.add(const Duration(days: 1))),
       lastDate: isIssueDate ? now : DateTime(2035),
     );
+    if (mounted) FocusScope.of(context).unfocus();
     if (picked != null) {
       setState(() {
         if (isIssueDate) {
@@ -112,6 +115,7 @@ class _UpdatePesticideLicenceScreenState
   }
 
   Future<void> _pickValidUpto(PesticideEntryDraft entry) async {
+    FocusScope.of(context).unfocus();
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
@@ -119,6 +123,7 @@ class _UpdatePesticideLicenceScreenState
       firstDate: DateTime(2015),
       lastDate: DateTime(2035),
     );
+    if (mounted) FocusScope.of(context).unfocus();
     if (picked != null) {
       setState(() => entry.validUpto = picked);
     }
@@ -129,11 +134,16 @@ class _UpdatePesticideLicenceScreenState
   }
 
   void _addRow() {
-    setState(() => _entries.add(PesticideEntryDraft()));
+    final newEntry = PesticideEntryDraft();
+    setState(() => _entries.add(newEntry));
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => newEntry.companyNameFocusNode.requestFocus(),
+    );
   }
 
   Future<void> _removeRow(int index) async {
     if (_entries.length == 1) return;
+    FocusScope.of(context).unfocus();
     final entry = _entries[index];
     if (entry.existingId != null) {
       final confirmed = await showDialog<bool>(
@@ -195,14 +205,14 @@ class _UpdatePesticideLicenceScreenState
     if (_issueDate == null) {
       setState(
         () => _errorMessage =
-            'The Date of Issue field is not filled, please do fill it.',
+            'The Date of Issue of Licence field is not filled, please do fill it.',
       );
       return;
     }
     if (_expiryDate == null) {
       setState(
         () => _errorMessage =
-            'The Date of Expiry field is not filled, please do fill it.',
+            'The Date of Expiry of Licence field is not filled, please do fill it.',
       );
       return;
     }
@@ -331,8 +341,8 @@ class _UpdatePesticideLicenceScreenState
                     contentPadding: EdgeInsets.zero,
                     title: Text(
                       _issueDate == null
-                          ? 'Select Date of Issue'
-                          : 'Date of Issue: ${_formatDate(_issueDate!)}',
+                          ? 'Select Date of Issue of Licence'
+                          : 'Date of Issue of Licence: ${_formatDate(_issueDate!)}',
                     ),
                     trailing: const Icon(Icons.calendar_today),
                     onTap: () => _pickLicenceDate(isIssueDate: true),
@@ -342,8 +352,8 @@ class _UpdatePesticideLicenceScreenState
                     contentPadding: EdgeInsets.zero,
                     title: Text(
                       _expiryDate == null
-                          ? 'Select Date of Expiry'
-                          : 'Date of Expiry: ${_formatDate(_expiryDate!)}',
+                          ? 'Select Date of Expiry of Licence'
+                          : 'Date of Expiry of Licence: ${_formatDate(_expiryDate!)}',
                     ),
                     trailing: const Icon(Icons.calendar_today),
                     onTap: () => _pickLicenceDate(isIssueDate: false),
@@ -384,6 +394,7 @@ class _UpdatePesticideLicenceScreenState
                             ),
                             TextField(
                               controller: entry.companyNameController,
+                              focusNode: entry.companyNameFocusNode,
                               decoration: InputDecoration(
                                 labelText: 'Name of Company (Manufacturer)',
                                 border: _fieldBorder(index, 'companyName'),

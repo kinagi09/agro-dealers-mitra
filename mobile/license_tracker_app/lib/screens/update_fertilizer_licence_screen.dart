@@ -6,6 +6,7 @@ class SourceEntryDraft {
   int? existingId;
   final TextEditingController sourceTypeController = TextEditingController();
   final TextEditingController companyNameController = TextEditingController();
+  final FocusNode sourceTypeFocusNode = FocusNode();
   List<int> fertilizerTypeIds = [];
   DateTime? validUpto;
 }
@@ -97,6 +98,7 @@ class _UpdateFertilizerLicenceScreenState
   }
 
   Future<void> _pickLicenceDate({required bool isIssueDate}) async {
+    FocusScope.of(context).unfocus();
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final picked = await showDatePicker(
@@ -111,6 +113,7 @@ class _UpdateFertilizerLicenceScreenState
                 today.add(const Duration(days: 1))),
       lastDate: isIssueDate ? now : DateTime(2035),
     );
+    if (mounted) FocusScope.of(context).unfocus();
     if (picked != null) {
       setState(() {
         if (isIssueDate) {
@@ -126,6 +129,7 @@ class _UpdateFertilizerLicenceScreenState
   }
 
   Future<void> _pickValidUpto(SourceEntryDraft entry) async {
+    FocusScope.of(context).unfocus();
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
@@ -133,12 +137,14 @@ class _UpdateFertilizerLicenceScreenState
       firstDate: DateTime(2015),
       lastDate: DateTime(2035),
     );
+    if (mounted) FocusScope.of(context).unfocus();
     if (picked != null) {
       setState(() => entry.validUpto = picked);
     }
   }
 
   Future<void> _pickFertilizerTypes(SourceEntryDraft entry) async {
+    FocusScope.of(context).unfocus();
     final tempSelected = List<int>.from(entry.fertilizerTypeIds);
     final result = await showDialog<List<int>>(
       context: context,
@@ -181,6 +187,10 @@ class _UpdateFertilizerLicenceScreenState
         );
       },
     );
+    // Closing the dialog can hand focus (and the keyboard) right back to
+    // whichever field had it before the dialog opened - unfocus again here,
+    // after the dialog is gone, not just before it opened.
+    if (mounted) FocusScope.of(context).unfocus();
     if (result != null) {
       setState(() => entry.fertilizerTypeIds = result);
     }
@@ -191,11 +201,16 @@ class _UpdateFertilizerLicenceScreenState
   }
 
   void _addSourceRow() {
-    setState(() => _sourceEntries.add(SourceEntryDraft()));
+    final newEntry = SourceEntryDraft();
+    setState(() => _sourceEntries.add(newEntry));
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => newEntry.sourceTypeFocusNode.requestFocus(),
+    );
   }
 
   Future<void> _removeSourceRow(int index) async {
     if (_sourceEntries.length == 1) return;
+    FocusScope.of(context).unfocus();
     final entry = _sourceEntries[index];
     if (entry.existingId != null) {
       final confirmed = await showDialog<bool>(
@@ -217,6 +232,7 @@ class _UpdateFertilizerLicenceScreenState
           ],
         ),
       );
+      if (mounted) FocusScope.of(context).unfocus();
       if (confirmed != true) return;
       try {
         await _apiService.deleteLicenceEntry(entry.existingId!);
@@ -257,14 +273,14 @@ class _UpdateFertilizerLicenceScreenState
     if (_issueDate == null) {
       setState(
         () => _errorMessage =
-            'The Date of Issue field is not filled, please do fill it.',
+            'The Date of Issue of Licence field is not filled, please do fill it.',
       );
       return;
     }
     if (_expiryDate == null) {
       setState(
         () => _errorMessage =
-            'The Date of Expiry field is not filled, please do fill it.',
+            'The Date of Expiry of Licence field is not filled, please do fill it.',
       );
       return;
     }
@@ -402,8 +418,8 @@ class _UpdateFertilizerLicenceScreenState
                     contentPadding: EdgeInsets.zero,
                     title: Text(
                       _issueDate == null
-                          ? 'Select Date of Issue'
-                          : 'Date of Issue: ${_formatDate(_issueDate!)}',
+                          ? 'Select Date of Issue of Licence'
+                          : 'Date of Issue of Licence: ${_formatDate(_issueDate!)}',
                     ),
                     trailing: const Icon(Icons.calendar_today),
                     onTap: () => _pickLicenceDate(isIssueDate: true),
@@ -413,8 +429,8 @@ class _UpdateFertilizerLicenceScreenState
                     contentPadding: EdgeInsets.zero,
                     title: Text(
                       _expiryDate == null
-                          ? 'Select Date of Expiry'
-                          : 'Date of Expiry: ${_formatDate(_expiryDate!)}',
+                          ? 'Select Date of Expiry of Licence'
+                          : 'Date of Expiry of Licence: ${_formatDate(_expiryDate!)}',
                     ),
                     trailing: const Icon(Icons.calendar_today),
                     onTap: () => _pickLicenceDate(isIssueDate: false),
@@ -455,6 +471,7 @@ class _UpdateFertilizerLicenceScreenState
                             ),
                             TextField(
                               controller: entry.sourceTypeController,
+                              focusNode: entry.sourceTypeFocusNode,
                               decoration: const InputDecoration(
                                 hintText: 'Source Type',
                               ),

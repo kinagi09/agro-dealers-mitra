@@ -43,6 +43,7 @@ class _UpdateSeedLicenceScreenState extends State<UpdateSeedLicenceScreen> {
   }
 
   Future<void> _pickLicenceDate({required bool isIssueDate}) async {
+    FocusScope.of(context).unfocus();
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final picked = await showDatePicker(
@@ -57,6 +58,7 @@ class _UpdateSeedLicenceScreenState extends State<UpdateSeedLicenceScreen> {
                 today.add(const Duration(days: 1))),
       lastDate: isIssueDate ? now : DateTime(2035),
     );
+    if (mounted) FocusScope.of(context).unfocus();
     if (picked != null) {
       setState(() {
         if (isIssueDate) {
@@ -86,14 +88,14 @@ class _UpdateSeedLicenceScreenState extends State<UpdateSeedLicenceScreen> {
     if (_issueDate == null) {
       setState(
         () => _errorMessage =
-            'The Date of Issue field is not filled, please do fill it.',
+            'The Date of Issue of Licence field is not filled, please do fill it.',
       );
       return;
     }
     if (_expiryDate == null) {
       setState(
         () => _errorMessage =
-            'The Date of Expiry field is not filled, please do fill it.',
+            'The Date of Expiry of Licence field is not filled, please do fill it.',
       );
       return;
     }
@@ -174,8 +176,8 @@ class _UpdateSeedLicenceScreenState extends State<UpdateSeedLicenceScreen> {
               contentPadding: EdgeInsets.zero,
               title: Text(
                 _issueDate == null
-                    ? 'Date of Issue of Licence'
-                    : 'Date of Issue: ${_formatDate(_issueDate!)}',
+                    ? 'Select Date of Issue of Licence'
+                    : 'Date of Issue of Licence: ${_formatDate(_issueDate!)}',
               ),
               trailing: const Icon(Icons.calendar_today),
               onTap: () => _pickLicenceDate(isIssueDate: true),
@@ -185,8 +187,8 @@ class _UpdateSeedLicenceScreenState extends State<UpdateSeedLicenceScreen> {
               contentPadding: EdgeInsets.zero,
               title: Text(
                 _expiryDate == null
-                    ? 'Date of expiry Licence'
-                    : 'Date of Expiry: ${_formatDate(_expiryDate!)}',
+                    ? 'Select Date of Expiry of Licence'
+                    : 'Date of Expiry of Licence: ${_formatDate(_expiryDate!)}',
               ),
               trailing: const Icon(Icons.calendar_today),
               onTap: () => _pickLicenceDate(isIssueDate: false),
