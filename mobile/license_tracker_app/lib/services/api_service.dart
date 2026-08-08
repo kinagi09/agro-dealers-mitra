@@ -287,7 +287,7 @@ class ApiService {
     required int licenceType,
     required String licenceNumber,
     required String issueDate,
-    required String expiryDate,
+    String? expiryDate,
   }) async {
     final body = jsonEncode({
       'dealer': dealer,
@@ -310,7 +310,7 @@ class ApiService {
     required int licenceType,
     required String licenceNumber,
     required String issueDate,
-    required String expiryDate,
+    String? expiryDate,
   }) async {
     final body = jsonEncode({
       'licence_type': licenceType,

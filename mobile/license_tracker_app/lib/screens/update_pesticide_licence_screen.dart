@@ -33,7 +33,6 @@ class _UpdatePesticideLicenceScreenState
       TextEditingController();
 
   DateTime? _issueDate;
-  DateTime? _expiryDate;
   int? _existingLicenceId;
 
   final List<PesticideEntryDraft> _entries = [PesticideEntryDraft()];
@@ -57,7 +56,6 @@ class _UpdatePesticideLicenceScreenState
         _existingLicenceId = existing['id'];
         _licenceNumberController.text = existing['licence_number'];
         _issueDate = DateTime.parse(existing['issue_date']);
-        _expiryDate = DateTime.parse(existing['expiry_date']);
 
         final existingEntries = await _apiService.getLicenceEntries(
           _existingLicenceId!,
@@ -84,34 +82,18 @@ class _UpdatePesticideLicenceScreenState
     }
   }
 
-  Future<void> _pickLicenceDate({required bool isIssueDate}) async {
+  Future<void> _pickIssueDate() async {
     FocusScope.of(context).unfocus();
     final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
     final picked = await showDatePicker(
       context: context,
-      initialDate: isIssueDate
-          ? now
-          : (_issueDate?.add(const Duration(days: 1)) ??
-                today.add(const Duration(days: 1))),
-      firstDate: isIssueDate
-          ? DateTime(2015)
-          : (_issueDate?.add(const Duration(days: 1)) ??
-                today.add(const Duration(days: 1))),
-      lastDate: isIssueDate ? now : DateTime(2035),
+      initialDate: now,
+      firstDate: DateTime(2015),
+      lastDate: now,
     );
     if (mounted) FocusScope.of(context).unfocus();
     if (picked != null) {
-      setState(() {
-        if (isIssueDate) {
-          _issueDate = picked;
-          if (_expiryDate != null && !_expiryDate!.isAfter(picked)) {
-            _expiryDate = null;
-          }
-        } else {
-          _expiryDate = picked;
-        }
-      });
+      setState(() => _issueDate = picked);
     }
   }
 
@@ -206,13 +188,6 @@ class _UpdatePesticideLicenceScreenState
       );
       return;
     }
-    if (_expiryDate == null) {
-      setState(
-        () => _errorMessage =
-            'The Date of Expiry of Licence field is not filled, please do fill it.',
-      );
-      return;
-    }
     for (var i = 0; i < _entries.length; i++) {
       final entry = _entries[i];
       if (entry.companyNameController.text.trim().isEmpty) {
@@ -248,7 +223,6 @@ class _UpdatePesticideLicenceScreenState
           licenceType: widget.licenceTypeId,
           licenceNumber: _licenceNumberController.text.trim(),
           issueDate: toApiDateString(_issueDate!),
-          expiryDate: toApiDateString(_expiryDate!),
         );
         licenceId = _existingLicenceId!;
       } else {
@@ -265,7 +239,6 @@ class _UpdatePesticideLicenceScreenState
           licenceType: widget.licenceTypeId,
           licenceNumber: _licenceNumberController.text.trim(),
           issueDate: toApiDateString(_issueDate!),
-          expiryDate: toApiDateString(_expiryDate!),
         );
         licenceId = licenceResponse['id'];
       }
@@ -342,18 +315,7 @@ class _UpdatePesticideLicenceScreenState
                           : 'Date of Issue of Licence: ${toDisplayDateString(_issueDate!)}',
                     ),
                     trailing: const Icon(Icons.calendar_today),
-                    onTap: () => _pickLicenceDate(isIssueDate: true),
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      _expiryDate == null
-                          ? 'Select Date of Expiry of Licence'
-                          : 'Date of Expiry of Licence: ${toDisplayDateString(_expiryDate!)}',
-                    ),
-                    trailing: const Icon(Icons.calendar_today),
-                    onTap: () => _pickLicenceDate(isIssueDate: false),
+                    onTap: _pickIssueDate,
                   ),
                   const SizedBox(height: 24),
                   const Text(

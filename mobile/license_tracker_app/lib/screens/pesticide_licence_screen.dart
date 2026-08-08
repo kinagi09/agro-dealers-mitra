@@ -197,12 +197,8 @@ class _PesticideLicenceScreenState extends State<PesticideLicenceScreen> {
                         else ...[
                           _infoRow('Licence No', licence['licence_number']),
                           _infoRow(
-                            'Date of Issue',
+                            'Date of Issue of Licence',
                             isoToDisplayDateString(licence['issue_date']),
-                          ),
-                          _infoRow(
-                            'Date of Expiry',
-                            isoToDisplayDateString(licence['expiry_date']),
                           ),
                           const SizedBox(height: 4),
                           const Text(

@@ -191,11 +191,11 @@ class _SeedLicenceScreenState extends State<SeedLicenceScreen> {
                         else ...[
                           _infoRow('Licence No', licence['licence_number']),
                           _infoRow(
-                            'Date of Issue',
+                            'Date of Issue of Licence',
                             isoToDisplayDateString(licence['issue_date']),
                           ),
                           _infoRow(
-                            'Date of Expiry',
+                            'Date of Expiry of Licence',
                             isoToDisplayDateString(licence['expiry_date']),
                           ),
                         ],
