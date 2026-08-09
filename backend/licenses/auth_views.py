@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
+from django.db import transaction
 from .models import Dealer, OTPVerification, NotificationPreference
 from .serializers import SendOTPSerializer, VerifyOTPSerializer, DealerRegistrationSerializer
 
@@ -84,13 +85,21 @@ class RegisterDealerView(APIView):
         dealer_serializer = DealerRegistrationSerializer(data=request.data)
         dealer_serializer.is_valid(raise_exception=True)
 
-        user = User.objects.create(username=whatsapp_number)
-        user.set_unusable_password()
-        user.save()
+        with transaction.atomic():
+            # A previous registration attempt may have created the User but
+            # failed before the Dealer was saved (e.g. a mid-request error) -
+            # such a User has no Dealer and holds no other data, so it's
+            # safe to replace rather than let it permanently block this
+            # number with a username collision.
+            User.objects.filter(username=whatsapp_number, dealer__isnull=True).delete()
 
-        dealer = dealer_serializer.save(user=user)
-        NotificationPreference.objects.create(dealer=dealer)
-        verified_otp.delete()
+            user = User.objects.create(username=whatsapp_number)
+            user.set_unusable_password()
+            user.save()
+
+            dealer = dealer_serializer.save(user=user)
+            NotificationPreference.objects.create(dealer=dealer)
+            verified_otp.delete()
 
         refresh = RefreshToken.for_user(user)
         return Response({
