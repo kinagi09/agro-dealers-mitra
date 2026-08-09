@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/date_format.dart';
+import 'login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -18,6 +19,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Map<String, List<String>> _addedTypesByCategory = {};
 
   bool _isLoading = true;
+  bool _isDeleting = false;
   String? _errorMessage;
 
   @override
@@ -71,6 +73,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         _errorMessage = 'Could not load profile. Check your connection.';
         _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _deleteProfile() async {
+    final dealerId = _profile?['id'];
+    if (dealerId == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Profile'),
+        content: const Text(
+          'This will permanently delete your account, including your '
+          'registration details and every licence you have added. '
+          'This cannot be undone. Continue?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    setState(() {
+      _isDeleting = true;
+      _errorMessage = null;
+    });
+    try {
+      await _apiService.deleteDealer(dealerId as int);
+      await _apiService.logout();
+      if (!mounted) return;
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        (route) => false,
+      );
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Could not delete your profile. Please try again.';
+        _isDeleting = false;
       });
     }
   }
@@ -205,6 +256,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     );
                   }),
+                  const SizedBox(height: 12),
+                  if (_errorMessage != null) ...[
+                    Text(
+                      _errorMessage!,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  OutlinedButton.icon(
+                    onPressed: _isDeleting ? null : _deleteProfile,
+                    icon: _isDeleting
+                        ? const SizedBox(
+                            height: 16,
+                            width: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.delete_forever, color: Colors.red),
+                    label: Text(
+                      _isDeleting ? 'Deleting...' : 'Delete Profile',
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.red),
+                    ),
+                  ),
                 ],
               ),
             ),

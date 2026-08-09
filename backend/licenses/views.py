@@ -57,6 +57,20 @@ class DealerViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(user=self.request.user)
         return queryset
 
+    def destroy(self, request, *args, **kwargs):
+        # get_queryset() above already restricts this to the caller's own
+        # record for non-staff users. Delete the linked User (not just the
+        # Dealer) so the account is fully gone, not left as an orphaned,
+        # unusable login row - Dealer.user is on_delete=CASCADE, so this
+        # also removes the Dealer and everything under it (licences,
+        # entries, reminders, notification prefs/logs) in one go.
+        instance = self.get_object()
+        if instance.user:
+            instance.user.delete()
+        else:
+            instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class LicenceCategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = LicenceCategory.objects.all()

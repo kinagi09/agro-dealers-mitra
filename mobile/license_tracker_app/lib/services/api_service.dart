@@ -253,6 +253,15 @@ class ApiService {
     return list.isNotEmpty ? list.first as Map<String, dynamic> : {};
   }
 
+  Future<void> deleteDealer(int dealerId) async {
+    await _authorizedRequest(
+      (headers) => http.delete(
+        Uri.parse('$baseUrl/dealers/$dealerId/'),
+        headers: headers,
+      ),
+    );
+  }
+
   Future<Map<String, dynamic>> getMyNotificationPreference() async {
     final data = await _authorizedRequest(
       (headers) => http.get(
