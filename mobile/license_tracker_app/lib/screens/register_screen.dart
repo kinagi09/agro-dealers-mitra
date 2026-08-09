@@ -210,14 +210,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
         MaterialPageRoute(builder: (_) => const HomeScreen()),
       );
     } catch (e) {
-      setState(
-        () => _errorMessage = e is ApiException
-            ? (e.errorData['detail'] ?? 'Registration failed.').toString()
-            : 'Registration failed. Check your details and try again.',
-      );
+      setState(() => _errorMessage = _describeRegistrationError(e));
     } finally {
       setState(() => _isLoading = false);
     }
+  }
+
+  String _describeRegistrationError(Object e) {
+    if (e is ApiException) {
+      final data = e.errorData;
+      if (data is Map && data['detail'] != null) {
+        return data['detail'].toString();
+      }
+      if (data is Map && data.isNotEmpty) {
+        // DRF field-validation errors look like {"taluka": ["This field is
+        // required."]} rather than {"detail": "..."} - surface those too
+        // instead of falling back to a generic message that hides which
+        // field actually failed.
+        final firstField = data.keys.first;
+        final firstError = data[firstField];
+        final errorText = firstError is List
+            ? firstError.join(', ')
+            : firstError.toString();
+        return '$firstField: $errorText';
+      }
+      return 'Registration failed: ${data.toString()}';
+    }
+    return 'Registration failed: $e';
   }
 
   bool _hasUnsavedChanges() {
