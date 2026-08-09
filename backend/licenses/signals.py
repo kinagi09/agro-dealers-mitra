@@ -3,7 +3,7 @@ from django.dispatch import receiver
 from datetime import timedelta
 from .models import Licence, LicenceEntry, ReminderSchedule
 
-REMINDER_THRESHOLDS = [30, 15, 7]
+REMINDER_THRESHOLDS = [30, 15, 7, 0]
 
 
 @receiver(post_save, sender=Licence)

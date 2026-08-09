@@ -18,20 +18,36 @@ class Command(BaseCommand):
             dealer = reminder.licence.dealer
             licence = reminder.licence
 
+            is_expiring_today = reminder.days_before_expiry == 0
+
             if reminder.entry:
                 entry = reminder.entry
-                message = (
-                    f"Reminder: {entry.company_name} on your licence "
-                    f"{licence.licence_number} ({licence.licence_type.name}) "
-                    f"is valid upto {entry.valid_upto}. "
-                    f"({reminder.days_before_expiry} days remaining)"
-                )
+                if is_expiring_today:
+                    message = (
+                        f"Reminder: {entry.company_name} on your licence "
+                        f"{licence.licence_number} ({licence.licence_type.name}) "
+                        f"is valid only through today ({entry.valid_upto})."
+                    )
+                else:
+                    message = (
+                        f"Reminder: {entry.company_name} on your licence "
+                        f"{licence.licence_number} ({licence.licence_type.name}) "
+                        f"is valid upto {entry.valid_upto}. "
+                        f"({reminder.days_before_expiry} days remaining)"
+                    )
             else:
-                message = (
-                    f"Reminder: Your licence {licence.licence_number} "
-                    f"({licence.licence_type.name}) expires on {licence.expiry_date}. "
-                    f"({reminder.days_before_expiry} days remaining)"
-                )
+                if is_expiring_today:
+                    message = (
+                        f"Reminder: Your licence {licence.licence_number} "
+                        f"({licence.licence_type.name}) expires today "
+                        f"({licence.expiry_date})."
+                    )
+                else:
+                    message = (
+                        f"Reminder: Your licence {licence.licence_number} "
+                        f"({licence.licence_type.name}) expires on {licence.expiry_date}. "
+                        f"({reminder.days_before_expiry} days remaining)"
+                    )
 
             # STUB: real push/WhatsApp sending goes here later.
             self.stdout.write(f"[STUB SEND] To {dealer.shop_name}: {message}")
