@@ -24,11 +24,15 @@ class TalukaSerializer(serializers.ModelSerializer):
 
 
 class DealerSerializer(serializers.ModelSerializer):
+    taluka_name = serializers.CharField(source="taluka.name", read_only=True)
+    district_name = serializers.CharField(source="taluka.district.name", read_only=True)
+    state_name = serializers.CharField(source="taluka.district.state.name", read_only=True)
+
     class Meta:
         model = Dealer
         fields = [
-            "id", "name", "shop_name", "whatsapp_number",
-            "address", "taluka", "created_at",
+            "id", "name", "shop_name", "whatsapp_number", "address",
+            "taluka", "taluka_name", "district_name", "state_name", "created_at",
         ]
         read_only_fields = ["id", "created_at"]
 
