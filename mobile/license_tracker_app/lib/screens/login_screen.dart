@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../widgets/app_logo.dart';
 import '../widgets/otp_input.dart';
+import '../widgets/resend_otp_button.dart';
 import 'register_screen.dart';
 import 'home_screen.dart';
 import 'package:flutter/services.dart';
@@ -65,6 +66,11 @@ class _LoginScreenState extends State<LoginScreen> {
     } finally {
       setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _resendOtp() async {
+    _otpController.clear();
+    await _sendOtp();
   }
 
   Future<void> _verifyAndLogin() async {
@@ -141,7 +147,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   focusNode: _otpFocusNode,
                   onCompleted: (_) => _verifyAndLogin(),
                 ),
-                const SizedBox(height: 16),
+                ResendOtpButton(onResend: _resendOtp),
+                const SizedBox(height: 8),
               ],
               if (_errorMessage != null) ...[
                 Text(_errorMessage!, style: const TextStyle(color: Colors.red)),

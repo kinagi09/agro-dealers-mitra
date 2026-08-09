@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/api_service.dart';
 import '../widgets/otp_input.dart';
+import '../widgets/resend_otp_button.dart';
 import '../widgets/unsaved_changes_guard.dart';
 import 'home_screen.dart';
 
@@ -119,6 +120,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     } finally {
       setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _resendOtp() async {
+    _otpController.clear();
+    await _sendOtp();
   }
 
   Future<void> _verifyOtp() async {
@@ -267,7 +273,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   focusNode: _otpFocusNode,
                   onCompleted: (_) => _verifyOtp(),
                 ),
-                const SizedBox(height: 12),
+                ResendOtpButton(onResend: _resendOtp),
+                const SizedBox(height: 4),
                 ElevatedButton(
                   onPressed: _isLoading ? null : _verifyOtp,
                   child: _isLoading
