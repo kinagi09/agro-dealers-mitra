@@ -1,0 +1,14 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "website",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": [
+        "/c",
+        "cd /d D:\\agro-dealers-mitra\\website && npm run dev"
+      ],
+      "port": 3000
+    }
+  ]
+}
