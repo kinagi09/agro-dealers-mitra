@@ -1,11 +1,18 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'navigation.dart';
 import 'screens/auth_gate.dart';
+import 'services/fcm_service.dart';
 import 'theme/app_theme.dart';
 import 'widgets/keyboard_dismiss_unfocus.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   runApp(const AgroDealersMitraApp());
+  FcmService().listenForNotificationTaps();
 }
 
 class AgroDealersMitraApp extends StatelessWidget {

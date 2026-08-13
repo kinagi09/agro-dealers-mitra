@@ -1,11 +1,14 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../services/fcm_service.dart';
 import '../widgets/app_logo.dart';
 import 'login_screen.dart';
 import 'fertilizer_licence_screen.dart';
 import 'pesticide_licence_screen.dart';
 import 'seed_licence_screen.dart';
 import 'notification_settings_screen.dart';
+import 'notifications_screen.dart';
 import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -19,11 +22,17 @@ class _HomeScreenState extends State<HomeScreen> {
   final ApiService _apiService = ApiService();
   String? _shopName;
   bool _isLoading = true;
+  bool _hasUnreadNotifications = false;
 
   @override
   void initState() {
     super.initState();
     _loadProfile();
+    _checkUnreadNotifications();
+    FcmService().initAndRegister();
+    // A push arriving while the app is open doesn't trigger the OS
+    // notification tray, so refresh the badge here to reflect it right away.
+    FirebaseMessaging.onMessage.listen((_) => _checkUnreadNotifications());
   }
 
   Future<void> _loadProfile() async {
@@ -35,6 +44,17 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     } catch (e) {
       setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _checkUnreadNotifications() async {
+    try {
+      final notifications = await _apiService.getMyNotifications();
+      final hasUnread = notifications.any((n) => n['is_read'] == false);
+      if (mounted) setState(() => _hasUnreadNotifications = hasUnread);
+    } catch (e) {
+      // Silently ignore - the badge just won't show, no need to surface an
+      // error for something this minor.
     }
   }
 
@@ -85,7 +105,40 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Home')),
+      appBar: AppBar(
+        title: const Text('Home'),
+        actions: [
+          IconButton(
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                const Icon(Icons.notifications_active_outlined),
+                if (_hasUnreadNotifications)
+                  Positioned(
+                    right: -1,
+                    top: -1,
+                    child: Container(
+                      width: 9,
+                      height: 9,
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            tooltip: 'Notifications',
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+              );
+              _checkUnreadNotifications();
+            },
+          ),
+        ],
+      ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,

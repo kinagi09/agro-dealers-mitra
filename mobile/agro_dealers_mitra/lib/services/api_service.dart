@@ -291,6 +291,19 @@ class ApiService {
     );
   }
 
+  Future<void> updateFcmToken({
+    required int id,
+    required String fcmToken,
+  }) async {
+    await _authorizedRequest(
+      (headers) => http.patch(
+        Uri.parse('$baseUrl/notification-preferences/$id/'),
+        headers: headers,
+        body: jsonEncode({'fcm_token': fcmToken}),
+      ),
+    );
+  }
+
   Future<Map<String, dynamic>> createLicence({
     required int dealer,
     required int licenceType,
@@ -394,6 +407,23 @@ class ApiService {
     await _authorizedRequest(
       (headers) => http.delete(
         Uri.parse('$baseUrl/licence-entries/$entryId/'),
+        headers: headers,
+      ),
+    );
+  }
+
+  Future<List<dynamic>> getMyNotifications() async {
+    final data = await _authorizedRequest(
+      (headers) =>
+          http.get(Uri.parse('$baseUrl/notifications/'), headers: headers),
+    );
+    return data as List<dynamic>;
+  }
+
+  Future<void> markAllNotificationsRead() async {
+    await _authorizedRequest(
+      (headers) => http.post(
+        Uri.parse('$baseUrl/notifications/mark_all_read/'),
         headers: headers,
       ),
     );

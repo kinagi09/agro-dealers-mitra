@@ -34,9 +34,10 @@ def create_or_update_reminders(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=LicenceEntry)
 def create_or_update_entry_reminders(sender, instance, created, **kwargs):
-    # Only Pesticide entries drive reminders this way; Fertilizer/Seed
-    # licences still use their own expiry_date via the signal above.
-    if instance.licence.licence_type.category.name != "Pesticide":
+    # Entries only exist for Fertilizer (O-form entries) and Pesticide (PC
+    # entries) - Seed licences have no entry table and rely solely on the
+    # licence-level signal above.
+    if instance.licence.licence_type.category.name not in ("Fertilizer", "Pesticide"):
         return
 
     for days in REMINDER_THRESHOLDS:

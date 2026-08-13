@@ -233,6 +233,13 @@ class NotificationLog(models.Model):
     channel = models.CharField(max_length=10, choices=CHANNEL_CHOICES)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="PENDING")
     message_content = models.TextField(blank=True, null=True)
+    # True for the day-0 "has expired today" reminder, False for the earlier
+    # 30/15/7-day-out ones - lets the app show expiry-day messages in red
+    # without parsing message_content.
+    is_expiry_day = models.BooleanField(default=False)
+    # Drives the red-dot badge on the app's notification bell; cleared in
+    # bulk when the dealer opens the Notifications screen.
+    is_read = models.BooleanField(default=False)
     sent_at = models.DateTimeField(auto_now_add=True)
     error_message = models.TextField(blank=True, null=True)
 

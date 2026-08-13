@@ -1,15 +1,16 @@
 from rest_framework import viewsets, permissions, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import (
     State, District, Taluka, Dealer,
     LicenceCategory, LicenceType, Licence,
-    NotificationPreference, LicenceEntry, FertilizerType,
+    NotificationPreference, LicenceEntry, FertilizerType, NotificationLog,
 )
 from .serializers import (
     StateSerializer, DistrictSerializer, TalukaSerializer, DealerSerializer,
     LicenceCategorySerializer, LicenceTypeSerializer,
     LicenceSerializer, NotificationPreferenceSerializer,
-    LicenceEntrySerializer, FertilizerTypeSerializer,
+    LicenceEntrySerializer, FertilizerTypeSerializer, NotificationLogSerializer,
 )
 
 
@@ -152,3 +153,23 @@ class FertilizerTypeViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = FertilizerType.objects.all()
     serializer_class = FertilizerTypeSerializer
     permission_classes = [permissions.AllowAny]
+
+
+class NotificationLogViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = NotificationLog.objects.all()
+    serializer_class = NotificationLogSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if not self.request.user.is_staff:
+            # A dealer sees their own PUSH log only - that's what actually
+            # reached this screen. The WHATSAPP rows are a separate delivery
+            # channel (or a stub for now), not something to duplicate here.
+            queryset = queryset.filter(dealer__user=self.request.user, channel="PUSH")
+        return queryset
+
+    @action(detail=False, methods=["post"])
+    def mark_all_read(self, request):
+        self.get_queryset().filter(is_read=False).update(is_read=True)
+        return Response(status=status.HTTP_204_NO_CONTENT)

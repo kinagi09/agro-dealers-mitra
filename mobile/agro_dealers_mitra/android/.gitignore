@@ -12,3 +12,7 @@ GeneratedPluginRegistrant.java
 key.properties
 **/*.keystore
 **/*.jks
+
+# Identifies the Firebase project this app is wired to - keep out of the
+# public repo, each dev/environment should drop in their own copy.
+app/google-services.json

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import (
     State, District, Taluka, Dealer, LicenceCategory, LicenceType, Licence,
-    NotificationPreference, LicenceEntry, FertilizerType,
+    NotificationPreference, LicenceEntry, FertilizerType, NotificationLog,
 )
 
 
@@ -98,3 +98,15 @@ class LicenceEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = LicenceEntry
         fields = ["id", "licence", "source_type", "company_name", "fertilizer_type", "valid_upto"]
+
+
+class NotificationLogSerializer(serializers.ModelSerializer):
+    dealer_shop_name = serializers.CharField(source="dealer.shop_name", read_only=True)
+
+    class Meta:
+        model = NotificationLog
+        fields = [
+            "id", "dealer", "dealer_shop_name", "licence", "channel", "status",
+            "message_content", "is_expiry_day", "is_read", "sent_at",
+        ]
+        read_only_fields = fields
