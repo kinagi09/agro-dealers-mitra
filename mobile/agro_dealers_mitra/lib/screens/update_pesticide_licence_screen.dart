@@ -169,9 +169,9 @@ class _UpdatePesticideLicenceScreenState
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Remove Entry'),
+          title: const Text('Remove PC Entry'),
           content: const Text(
-            'This will permanently delete this company entry. Continue?',
+            'This will permanently delete this PC entry. Continue?',
           ),
           actions: [
             TextButton(
@@ -234,7 +234,7 @@ class _UpdatePesticideLicenceScreenState
       if (entry.companyNameController.text.trim().isEmpty) {
         setState(() {
           _errorMessage =
-              'Entry ${i + 1}: Name of Company is not filled, please do fill it.';
+              'PC Entry ${i + 1}: Name of Company is not filled, please do fill it.';
           _errorRowIndex = i;
           _errorFieldName = 'companyName';
         });
@@ -243,7 +243,7 @@ class _UpdatePesticideLicenceScreenState
       if (entry.validUpto == null) {
         setState(() {
           _errorMessage =
-              'Entry ${i + 1}: PC Validity Date is not filled, please do fill it.';
+              'PC Entry ${i + 1}: PC Validity Date is not filled, please do fill it.';
           _errorRowIndex = i;
           _errorFieldName = 'validUpto';
         });
@@ -362,7 +362,7 @@ class _UpdatePesticideLicenceScreenState
                     ),
                     const SizedBox(height: 24),
                     const Text(
-                      'Company Entries',
+                      'PC Entries',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -381,7 +381,7 @@ class _UpdatePesticideLicenceScreenState
                               Row(
                                 children: [
                                   Text(
-                                    'Entry ${index + 1}',
+                                    'PC Entry ${index + 1}',
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -434,7 +434,7 @@ class _UpdatePesticideLicenceScreenState
                     OutlinedButton.icon(
                       onPressed: _addRow,
                       icon: const Icon(Icons.add),
-                      label: const Text('Add Another Company'),
+                      label: const Text('Add Another PC Entry'),
                     ),
                     const SizedBox(height: 24),
                     if (_errorMessage != null) ...[

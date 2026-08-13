@@ -235,7 +235,7 @@ class _FertilizerLicenceScreenState extends State<FertilizerLicenceScreen> {
                           ),
                           const SizedBox(height: 4),
                           const Text(
-                            'Source / Company Entries',
+                            'O-form Entries',
                             style: TextStyle(fontWeight: FontWeight.w600),
                           ),
                           if (entries.isEmpty)

@@ -202,7 +202,7 @@ class _PesticideLicenceScreenState extends State<PesticideLicenceScreen> {
                           ),
                           const SizedBox(height: 4),
                           const Text(
-                            'Company Entries',
+                            'PC Entries',
                             style: TextStyle(fontWeight: FontWeight.w600),
                           ),
                           if (entries.isEmpty)

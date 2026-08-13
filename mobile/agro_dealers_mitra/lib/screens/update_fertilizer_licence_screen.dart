@@ -269,9 +269,9 @@ class _UpdateFertilizerLicenceScreenState
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Remove Entry'),
+          title: const Text('Remove O-form Entry'),
           content: const Text(
-            'This will permanently delete this source entry. Continue?',
+            'This will permanently delete this O-form entry. Continue?',
           ),
           actions: [
             TextButton(
@@ -342,7 +342,7 @@ class _UpdateFertilizerLicenceScreenState
       if (entry.companyNameController.text.trim().isEmpty) {
         setState(() {
           _errorMessage =
-              'Entry ${i + 1}: Source Company Name is not filled, please do fill it.';
+              'O-form Entry ${i + 1}: Source Company Name is not filled, please do fill it.';
           _errorRowIndex = i;
           _errorFieldName = 'companyName';
         });
@@ -351,7 +351,7 @@ class _UpdateFertilizerLicenceScreenState
       if (entry.fertilizerTypeIds.isEmpty) {
         setState(() {
           _errorMessage =
-              'Entry ${i + 1}: At least one Type of Fertilizer must be selected.';
+              'O-form Entry ${i + 1}: At least one Type of Fertilizer must be selected.';
           _errorRowIndex = i;
           _errorFieldName = 'fertilizerType';
         });
@@ -360,7 +360,7 @@ class _UpdateFertilizerLicenceScreenState
       if (entry.validUpto == null) {
         setState(() {
           _errorMessage =
-              'Entry ${i + 1}: Valid Upto date is not filled, please do fill it.';
+              'O-form Entry ${i + 1}: Valid Upto date is not filled, please do fill it.';
           _errorRowIndex = i;
           _errorFieldName = 'validUpto';
         });
@@ -492,7 +492,7 @@ class _UpdateFertilizerLicenceScreenState
                     ),
                     const SizedBox(height: 24),
                     const Text(
-                      'Source / Company Entries',
+                      'O-form Entries',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -511,7 +511,7 @@ class _UpdateFertilizerLicenceScreenState
                               Row(
                                 children: [
                                   Text(
-                                    'Entry ${index + 1}',
+                                    'O-form Entry ${index + 1}',
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -600,7 +600,7 @@ class _UpdateFertilizerLicenceScreenState
                     OutlinedButton.icon(
                       onPressed: _addSourceRow,
                       icon: const Icon(Icons.add),
-                      label: const Text('Add Another Source Entry'),
+                      label: const Text('Add Another O-form Entry'),
                     ),
                     const SizedBox(height: 24),
                     if (_errorMessage != null) ...[
