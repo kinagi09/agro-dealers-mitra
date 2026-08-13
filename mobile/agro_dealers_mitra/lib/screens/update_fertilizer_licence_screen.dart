@@ -170,7 +170,7 @@ class _UpdateFertilizerLicenceScreenState
                 today.add(const Duration(days: 1))),
       lastDate: isIssueDate ? now : DateTime(2035),
     );
-    if (mounted) FocusScope.of(context).unfocus();
+    if (mounted) FocusScope.of(context).requestFocus(FocusNode());
     if (picked != null) {
       setState(() {
         if (isIssueDate) {
@@ -194,7 +194,7 @@ class _UpdateFertilizerLicenceScreenState
       firstDate: DateTime(2015),
       lastDate: DateTime(2035),
     );
-    if (mounted) FocusScope.of(context).unfocus();
+    if (mounted) FocusScope.of(context).requestFocus(FocusNode());
     if (picked != null) {
       setState(() => entry.validUpto = picked);
     }
@@ -247,7 +247,7 @@ class _UpdateFertilizerLicenceScreenState
     // Closing the dialog can hand focus (and the keyboard) right back to
     // whichever field had it before the dialog opened - unfocus again here,
     // after the dialog is gone, not just before it opened.
-    if (mounted) FocusScope.of(context).unfocus();
+    if (mounted) FocusScope.of(context).requestFocus(FocusNode());
     if (result != null) {
       setState(() => entry.fertilizerTypeIds = result);
     }
@@ -285,7 +285,7 @@ class _UpdateFertilizerLicenceScreenState
           ],
         ),
       );
-      if (mounted) FocusScope.of(context).unfocus();
+      if (mounted) FocusScope.of(context).requestFocus(FocusNode());
       if (confirmed != true) return;
       try {
         await _apiService.deleteLicenceEntry(entry.existingId!);

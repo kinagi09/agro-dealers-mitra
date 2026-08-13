@@ -46,7 +46,14 @@ class _KeyboardDismissUnfocusState extends State<KeyboardDismissUnfocus>
       // Defer a frame so this doesn't race a field that's legitimately
       // requesting focus right now (e.g. autofocusing the next field).
       SchedulerBinding.instance.addPostFrameCallback((_) {
-        FocusManager.instance.primaryFocus?.unfocus();
+        if (!mounted) return;
+        // Plain unfocus() isn't enough: the enclosing FocusScopeNode keeps
+        // this field recorded as its "focused child", so anything that
+        // later re-requests focus on that scope (a dropdown/date-picker
+        // route closing and handing focus back, for instance) re-focuses
+        // this same field and pops the keyboard back open. Requesting
+        // focus on a throwaway node overwrites that memory instead.
+        FocusScope.of(context).requestFocus(FocusNode());
       });
     }
   }

@@ -132,7 +132,7 @@ class _UpdatePesticideLicenceScreenState
       firstDate: DateTime(2015),
       lastDate: now,
     );
-    if (mounted) FocusScope.of(context).unfocus();
+    if (mounted) FocusScope.of(context).requestFocus(FocusNode());
     if (picked != null) {
       setState(() => _issueDate = picked);
     }
@@ -147,7 +147,7 @@ class _UpdatePesticideLicenceScreenState
       firstDate: DateTime(2015),
       lastDate: DateTime(2035),
     );
-    if (mounted) FocusScope.of(context).unfocus();
+    if (mounted) FocusScope.of(context).requestFocus(FocusNode());
     if (picked != null) {
       setState(() => entry.validUpto = picked);
     }

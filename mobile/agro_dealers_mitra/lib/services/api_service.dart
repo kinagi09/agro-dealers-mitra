@@ -12,7 +12,7 @@ class ApiService {
   /// keep working without extra setup.
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://10.15.175.232:8000/api',
+    defaultValue: 'http://10.41.222.232:8000/api',
   );
   final storage = const FlutterSecureStorage();
 

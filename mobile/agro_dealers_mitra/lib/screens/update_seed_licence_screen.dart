@@ -73,7 +73,7 @@ class _UpdateSeedLicenceScreenState extends State<UpdateSeedLicenceScreen> {
                 today.add(const Duration(days: 1))),
       lastDate: isIssueDate ? now : DateTime(2035),
     );
-    if (mounted) FocusScope.of(context).unfocus();
+    if (mounted) FocusScope.of(context).requestFocus(FocusNode());
     if (picked != null) {
       setState(() {
         if (isIssueDate) {
