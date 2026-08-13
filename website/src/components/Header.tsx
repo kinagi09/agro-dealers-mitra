@@ -18,6 +18,9 @@ export default function Header() {
           <Link href="/#how-it-works" className="hover:text-brand-green">
             How it works
           </Link>
+          <Link href="/login" className="hover:text-brand-green">
+            Login
+          </Link>
           <Link
             href="/#get-the-app"
             className="rounded-lg bg-brand-yellow px-4 py-2 font-bold text-black hover:brightness-95"
