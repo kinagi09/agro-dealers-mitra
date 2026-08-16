@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../widgets/app_logo.dart';
-import 'home_screen.dart';
 import 'login_screen.dart';
+import 'subscription_gate.dart';
 
 /// Decides whether to show the home screen or the login screen at startup,
 /// based on whether a session was already saved on this device. Without
@@ -44,6 +44,6 @@ class _AuthGateState extends State<AuthGate> {
     if (_isLoggedIn == null) {
       return const Scaffold(body: Center(child: AppLogo(size: 72)));
     }
-    return _isLoggedIn! ? const HomeScreen() : const LoginScreen();
+    return _isLoggedIn! ? const SubscriptionGate() : const LoginScreen();
   }
 }

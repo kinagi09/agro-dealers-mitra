@@ -278,3 +278,31 @@ export async function getMyNotifications() {
     fetch(`${baseUrl}/notifications/`, { headers })
   );
 }
+
+// ---------- SUBSCRIPTION / PAYMENT ----------
+
+export async function createSubscription() {
+  return authorizedRequest((headers) =>
+    fetch(`${baseUrl}/subscription/create/`, { method: "POST", headers })
+  );
+}
+
+export async function verifySubscription(payload: {
+  razorpay_payment_id: string;
+  razorpay_subscription_id: string;
+  razorpay_signature: string;
+}) {
+  return authorizedRequest((headers) =>
+    fetch(`${baseUrl}/subscription/verify/`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(payload),
+    })
+  );
+}
+
+export async function getSubscriptionStatus() {
+  return authorizedRequest((headers) =>
+    fetch(`${baseUrl}/subscription/status/`, { headers })
+  );
+}

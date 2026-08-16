@@ -429,6 +429,45 @@ class ApiService {
     );
   }
 
+  // ---------- SUBSCRIPTION / PAYMENT ----------
+
+  Future<Map<String, dynamic>> createSubscription() async {
+    return await _authorizedRequest(
+      (headers) => http.post(
+        Uri.parse('$baseUrl/subscription/create/'),
+        headers: headers,
+      ),
+    );
+  }
+
+  Future<Map<String, dynamic>> verifySubscription({
+    required String razorpayPaymentId,
+    required String razorpaySubscriptionId,
+    required String razorpaySignature,
+  }) async {
+    final body = jsonEncode({
+      'razorpay_payment_id': razorpayPaymentId,
+      'razorpay_subscription_id': razorpaySubscriptionId,
+      'razorpay_signature': razorpaySignature,
+    });
+    return await _authorizedRequest(
+      (headers) => http.post(
+        Uri.parse('$baseUrl/subscription/verify/'),
+        headers: headers,
+        body: body,
+      ),
+    );
+  }
+
+  Future<Map<String, dynamic>> getSubscriptionStatus() async {
+    return await _authorizedRequest(
+      (headers) => http.get(
+        Uri.parse('$baseUrl/subscription/status/'),
+        headers: headers,
+      ),
+    );
+  }
+
   // ---------- SHARED RESPONSE HANDLER ----------
 
   dynamic _handleResponse(http.Response response) {

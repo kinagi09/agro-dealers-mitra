@@ -38,6 +38,11 @@ FIREBASE_CREDENTIALS_PATH = os.getenv(
     str(BASE_DIR / 'secrets' / 'firebase-service-account.json'),
 )
 
+RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID')
+RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET')
+RAZORPAY_PLAN_ID = os.getenv('RAZORPAY_PLAN_ID')
+RAZORPAY_WEBHOOK_SECRET = os.getenv('RAZORPAY_WEBHOOK_SECRET')
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 

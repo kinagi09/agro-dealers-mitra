@@ -4,7 +4,7 @@ import '../widgets/app_logo.dart';
 import '../widgets/otp_input.dart';
 import '../widgets/resend_otp_button.dart';
 import 'register_screen.dart';
-import 'home_screen.dart';
+import 'subscription_gate.dart';
 import 'package:flutter/services.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -86,7 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        MaterialPageRoute(builder: (_) => const SubscriptionGate()),
       );
     } catch (e) {
       setState(() => _errorMessage = 'Invalid or expired OTP. Try again.');

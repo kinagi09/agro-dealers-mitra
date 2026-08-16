@@ -71,6 +71,31 @@ class Dealer(models.Model):
         return f"{self.shop_name} ({self.name})"
 
 
+class Subscription(models.Model):
+    # Mirrors Razorpay's own subscription status strings directly (created,
+    # authenticated, active, pending, halted, cancelled, completed, expired)
+    # rather than reinventing an enum - keeps this always in sync with
+    # whatever Razorpay reports, including states we don't explicitly list.
+    dealer = models.OneToOneField(
+        Dealer,
+        on_delete=models.CASCADE,
+        related_name="subscription"
+    )
+    razorpay_subscription_id = models.CharField(max_length=100, unique=True)
+    status = models.CharField(max_length=20, default="created")
+    current_start = models.DateTimeField(null=True, blank=True)
+    current_end = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def is_active(self):
+        return self.status == "active"
+
+    def __str__(self):
+        return f"{self.dealer.shop_name} - {self.status}"
+
+
 class LicenceCategory(models.Model):
     name = models.CharField(max_length=100, unique=True)
 

@@ -4,7 +4,7 @@ import '../services/api_service.dart';
 import '../widgets/otp_input.dart';
 import '../widgets/resend_otp_button.dart';
 import '../widgets/unsaved_changes_guard.dart';
-import 'home_screen.dart';
+import 'subscription_gate.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -207,7 +207,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        MaterialPageRoute(builder: (_) => const SubscriptionGate()),
       );
     } catch (e) {
       setState(() => _errorMessage = _describeRegistrationError(e));

@@ -19,12 +19,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
-    queueMicrotask(() => {
+    queueMicrotask(async () => {
       if (!api.isLoggedIn()) {
         router.replace("/login");
-      } else {
-        setChecked(true);
+        return;
       }
+      // Fails closed to /subscribe on any error (e.g. network issue) rather
+      // than granting access to a dealer whose subscription can't be
+      // confirmed active.
+      try {
+        const result = await api.getSubscriptionStatus();
+        if (result.is_active !== true) {
+          router.replace("/subscribe");
+          return;
+        }
+      } catch {
+        router.replace("/subscribe");
+        return;
+      }
+      setChecked(true);
     });
   }, [router]);
 

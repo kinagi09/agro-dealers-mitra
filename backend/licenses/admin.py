@@ -3,7 +3,7 @@ from .models import (
     State, District, Taluka, Dealer,
     LicenceCategory, LicenceType, Licence,
     NotificationPreference, ReminderSchedule, NotificationLog,
-    OTPVerification, LicenceEntry, FertilizerType
+    OTPVerification, LicenceEntry, FertilizerType, Subscription
 )
 
 
@@ -106,3 +106,11 @@ class LicenceEntryAdmin(admin.ModelAdmin):
 class FertilizerTypeAdmin(admin.ModelAdmin):
     list_display = ("name",)
     search_fields = ("name",)
+
+
+@admin.register(Subscription)
+class SubscriptionAdmin(admin.ModelAdmin):
+    list_display = ("dealer", "status", "current_start", "current_end", "razorpay_subscription_id")
+    list_filter = ("status",)
+    search_fields = ("dealer__shop_name", "razorpay_subscription_id")
+    autocomplete_fields = ("dealer",)

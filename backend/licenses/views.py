@@ -12,6 +12,7 @@ from .serializers import (
     LicenceSerializer, NotificationPreferenceSerializer,
     LicenceEntrySerializer, FertilizerTypeSerializer, NotificationLogSerializer,
 )
+from .permissions import HasActiveSubscription
 
 
 class StateViewSet(viewsets.ReadOnlyModelViewSet):
@@ -95,7 +96,7 @@ class LicenceTypeViewSet(viewsets.ReadOnlyModelViewSet):
 class LicenceViewSet(viewsets.ModelViewSet):
     queryset = Licence.objects.all()
     serializer_class = LicenceSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, HasActiveSubscription]
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -125,7 +126,7 @@ class LicenceViewSet(viewsets.ModelViewSet):
 class NotificationPreferenceViewSet(viewsets.ModelViewSet):
     queryset = NotificationPreference.objects.all()
     serializer_class = NotificationPreferenceSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, HasActiveSubscription]
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -137,7 +138,7 @@ class NotificationPreferenceViewSet(viewsets.ModelViewSet):
 class LicenceEntryViewSet(viewsets.ModelViewSet):
     queryset = LicenceEntry.objects.all()
     serializer_class = LicenceEntrySerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, HasActiveSubscription]
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -158,7 +159,7 @@ class FertilizerTypeViewSet(viewsets.ReadOnlyModelViewSet):
 class NotificationLogViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = NotificationLog.objects.all()
     serializer_class = NotificationLogSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, HasActiveSubscription]
 
     def get_queryset(self):
         queryset = super().get_queryset()

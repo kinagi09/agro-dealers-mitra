@@ -7,6 +7,10 @@ from .views import (
     NotificationLogViewSet,
 )
 from .auth_views import SendOTPView, RegisterDealerView, LoginView, VerifyOTPView
+from .subscription_views import (
+    SubscriptionCreateView, SubscriptionVerifyView, SubscriptionStatusView,
+    RazorpayWebhookView,
+)
 
 router = DefaultRouter()
 router.register(r"states", StateViewSet, basename="state")
@@ -32,4 +36,8 @@ urlpatterns = router.urls + [
     # have an unusable Django password, so they can never reach this path.
     path("auth/staff-login/", TokenObtainPairView.as_view(), name="staff-login"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token-refresh"),
+    path("subscription/create/", SubscriptionCreateView.as_view(), name="subscription-create"),
+    path("subscription/verify/", SubscriptionVerifyView.as_view(), name="subscription-verify"),
+    path("subscription/status/", SubscriptionStatusView.as_view(), name="subscription-status"),
+    path("subscription/webhook/", RazorpayWebhookView.as_view(), name="subscription-webhook"),
 ]
